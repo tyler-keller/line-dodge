@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Line Dodge</title>
+    <title>Red Dot Dodge Game</title>
     <style>
         body {
             display: flex;
@@ -27,25 +27,17 @@
 </head>
 <body>
     <div id="scoreboard">
-        <div>High Score: <span id="current-highscore">0</span></div>
-        <div></div>
-        <div>Round: <span id="current-round">1</span></div>
-        <div>Lines: <span id="current-lines">0</span></div>
-        <div>Score: <span id="current-score">0</span></div>
-        <div>Lives: <span id="current-lives">3</span></div>
+        <div>Current Score: <span id="current-score">0</span></div>
+        <div>High Score: <span id="high-score">0</span></div>
     </div>
     <canvas id="gameCanvas" width="600" height="600"></canvas>
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
-
-        const scoreboardHighScore = document.getElementById('current-highscore');
-        const scoreboardRound = document.getElementById('current-round');
-        const scoreboardLines = document.getElementById('current-lines');
-        const scoreboardScore = document.getElementById('current-score');
-        const scoreboardLives = document.getElementById('current-lives');
+        const scoreboard = document.getElementById('current-score');
+        const highScoreBoard = document.getElementById('high-score');
         
-        let redDot = { x: canvas.width / 2, y: canvas.height / 2, radius: 8, speed: 4 };
+        let redDot = { x: canvas.width / 2, y: canvas.height / 2, radius: 10, speed: 2 };
         let keys = {};
         let lines = [];
         let score = 0;
@@ -54,15 +46,8 @@
         let round = 1;
         let maxRounds = 5;
         let linesPerRound = 20;
-        let roundColor = {
-            1: 'white',
-            2: 'yellow',
-            3: 'orange',
-            4: 'red',
-            5: 'purple',
-        }
 
-        scoreboardHighScore.textContent = highScore;
+        highScoreBoard.textContent = highScore;
 
         document.addEventListener('keydown', (e) => keys[e.key.toLowerCase()] = true);
         document.addEventListener('keyup', (e) => keys[e.key.toLowerCase()] = false);
@@ -74,38 +59,43 @@
             if (keys['a'] || keys['arrowleft']) redDot.x -= moveSpeed;
             if (keys['d'] || keys['arrowright']) redDot.x += moveSpeed;
 
-                        redDot.x = Math.max(redDot.radius, Math.min(canvas.width - redDot.radius, redDot.x));
+            // Clamp the red dot to canvas boundaries
+            redDot.x = Math.max(redDot.radius, Math.min(canvas.width - redDot.radius, redDot.x));
             redDot.y = Math.max(redDot.radius, Math.min(canvas.height - redDot.radius, redDot.y));
 
-                        for (let i = lines.length - 1; i >= 0; i--) {
+            // Move lines and check collisions
+            for (let i = lines.length - 1; i >= 0; i--) {
                 let line = lines[i];
                 line.x += line.dx;
                 line.y += line.dy;
 
-                if ((line.dx > 0 && line.x > canvas.width) || (line.dx < 0 && line.x + line.width < 0) ||
-                    (line.dy > 0 && line.y > canvas.height) || (line.dy < 0 && line.y + line.height < 0)) {
+                if (line.dx !== 0 && (line.x < 0 || line.x > canvas.width)) {
                     lines.splice(i, 1);
-                    score = score + 10 * round;
-                    scoreboardScore.textContent = score;
+                    score += 10 * round;
+                    scoreboard.textContent = score;
+                }
+                if (line.dy !== 0 && (line.y < 0 || line.y > canvas.height)) {
+                    lines.splice(i, 1);
+                    score += 10 * round;
+                    scoreboard.textContent = score;
                 }
 
-                                if (redDot.x + redDot.radius > line.x && redDot.x - redDot.radius < line.x + line.width &&
+                // Collision detection with red dot
+                if (redDot.x + redDot.radius > line.x && redDot.x - redDot.radius < line.x + line.width &&
                     redDot.y + redDot.radius > line.y && redDot.y - redDot.radius < line.y + line.height) {
                     lines.splice(i, 1);
                     lives -= 1;
-                    scoreboardLives.textContent = lives;
                     if (lives <= 0) {
                         gameOver();
                         return;
                     }
-                } 
+                }
             }
 
             if (lines.length === 0 && round <= maxRounds) {
                 round++;
-                linesPerRound = Math.min(linesPerRound * 2, 3);                 scoreboardRound.textContent = round;
                 if (round <= maxRounds) {
-                    for (let i = 0; i < linesPerRound; i++) {
+                    for (let i = 0; i < linesPerRound * round; i++) {
                         spawnLine();
                     }
                 } else {
@@ -117,12 +107,14 @@
         function draw() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-                        ctx.fillStyle = 'red';
+            // Draw red dot
+            ctx.fillStyle = 'red';
             ctx.beginPath();
             ctx.arc(redDot.x, redDot.y, redDot.radius, 0, Math.PI * 2);
             ctx.fill();
 
-                        ctx.fillStyle = roundColor[round];
+            // Draw lines
+            ctx.fillStyle = 'white';
             for (let line of lines) {
                 ctx.fillRect(line.x, line.y, line.width, line.height);
             }
@@ -130,43 +122,24 @@
 
         function spawnLine() {
             const side = Math.floor(Math.random() * 4); // 0 = top, 1 = right, 2 = bottom, 3 = left
-            const speed = Math.random() * 2 + 5;
+            const speed = Math.random() * 2 + 1; // Random speed between 1 and 3
             let line = { x: 0, y: 0, width: 0, height: 0, dx: 0, dy: 0 };
 
             const maxSize = canvas.width / 2;
-            const randomSize = Math.random() * maxSize / 2 + maxSize / 4; 
+            const randomSize = Math.random() * maxSize / 2 + 5; // Random size between 5 and maxSize/2
+
             switch (side) {
                 case 0: // Top
-                    var width = Math.floor(Math.random() * canvas.width);
-                    var height = 20;
-                    var x = Math.floor(Math.random() * canvas.width);
-                    var y = 0;
-
-                    line = { x: x, y: y, width: width, height: height, dx: 0, dy: speed};
+                    line = { x: Math.random() * canvas.width, y: 0, width: 5, height: randomSize, dx: 0, dy: speed };
                     break;
                 case 1: // Right
-                    var width = 20;
-                    var height = Math.floor(Math.random() * canvas.width);
-                    var x = canvas.width;
-                    var y = Math.floor(Math.random() * canvas.width);
-
-                    line = { x: x, y: y, width: width, height: height, dx: -speed, dy: 0 };
+                    line = { x: canvas.width, y: Math.random() * canvas.height, width: randomSize, height: 5, dx: -speed, dy: 0 };
                     break;
                 case 2: // Bottom
-                    var width = Math.floor(Math.random() * canvas.width);
-                    var height = 20;
-                    var x = Math.floor(Math.random() * canvas.width);
-                    var y = canvas.height;
-
-                    line = { x: x, y: y, width: width, height: height, dx: 0, dy: -speed };
+                    line = { x: Math.random() * canvas.width, y: canvas.height, width: 5, height: randomSize, dx: 0, dy: -speed };
                     break;
                 case 3: // Left
-                    var width = 20;
-                    var height = Math.floor(Math.random() * canvas.width);
-                    var x = canvas.width;
-                    var y = Math.floor(Math.random() * canvas.width);
-
-                    line = { x: x, y: y, width: width, height: height, dx: speed, dy: 0 };
+                    line = { x: 0, y: Math.random() * canvas.height, width: randomSize, height: 5, dx: speed, dy: 0 };
                     break;
             }
 
@@ -183,7 +156,16 @@
         }
 
         function resetGame() {
-            location.reload();
+            score = 0;
+            lives = 3;
+            round = 1;
+            redDot = { x: canvas.width / 2, y: canvas.height / 2, radius: 10, speed: 2 };
+            lines = [];
+            scoreboard.textContent = score;
+            highScoreBoard.textContent = highScore;
+            for (let i = 0; i < linesPerRound; i++) {
+                spawnLine();
+            }
         }
 
         function loop() {
@@ -192,11 +174,7 @@
             requestAnimationFrame(loop);
         }
 
-        setInterval(() => {
-            if (lines.length < 3) {
-                spawnLine();
-            }
-        }, 1000);
+        resetGame();
         loop();
     </script>
 </body>
