@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Red Dot Dodge Game</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+            background-color: #111;
+            color: white;
+        }
+        canvas {
+            background-color: #222;
+        }
+        #scoreboard {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div id="scoreboard">
+        <div>Current Score: <span id="current-score">0</span></div>
+        <div>High Score: <span id="high-score">0</span></div>
+    </div>
+    <canvas id="gameCanvas" width="600" height="600"></canvas>
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const scoreboard = document.getElementById('current-score');
+        const highScoreBoard = document.getElementById('high-score');
+        
+        let redDot = { x: canvas.width / 2, y: canvas.height / 2, radius: 10, speed: 2 };
+        let keys = {};
+        let lines = [];
+        let score = 0;
+        let highScore = localStorage.getItem('highScore') ? parseInt(localStorage.getItem('highScore')) : 0;
+        let lives = 3;
+
+        highScoreBoard.textContent = highScore;
+
+        document.addEventListener('keydown', (e) => keys[e.key] = true);
+        document.addEventListener('keyup', (e) => keys[e.key] = false);
+
+        function update() {
+            let moveSpeed = keys['Shift'] ? redDot.speed * 2 : redDot.speed;
+            if (keys['w'] || keys['W']) redDot.y -= moveSpeed;
+            if (keys['s'] || keys['S']) redDot.y += moveSpeed;
+            if (keys['a'] || keys['A']) redDot.x -= moveSpeed;
+            if (keys['d'] || keys['D']) redDot.x += moveSpeed;
+
+            // Clamp the red dot to canvas boundaries
+            redDot.x = Math.max(redDot.radius, Math.min(canvas.width - redDot.radius, redDot.x));
+            redDot.y = Math.max(redDot.radius, Math.min(canvas.height - redDot.radius, redDot.y));
+
+            // Move lines and check collisions
+            for (let i = lines.length - 1; i >= 0; i--) {
+                let line = lines[i];
+                line.x += line.dx;
+                line.y += line.dy;
+
+                if (line.dx !== 0 && (line.x < 0 || line.x > canvas.width)) lines.splice(i, 1);
+                if (line.dy !== 0 && (line.y < 0 || line.y > canvas.height)) lines.splice(i, 1);
+
+                // Collision detection with red dot
+                if (redDot.x + redDot.radius > line.x && redDot.x - redDot.radius < line.x + line.width &&
+                    redDot.y + redDot.radius > line.y && redDot.y - redDot.radius < line.y + line.height) {
+                    lines.splice(i, 1);
+                    lives -= 1;
+                    if (lives <= 0) {
+                        gameOver();
+                        return;
+                    }
+                } else if (line.dx === 0 && line.dy === 0) {
+                    score++;
+                    scoreboard.textContent = score;
+                }
+            }
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw red dot
+            ctx.fillStyle = 'red';
+            ctx.beginPath();
+            ctx.arc(redDot.x, redDot.y, redDot.radius, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Draw lines
+            ctx.fillStyle = 'white';
+            for (let line of lines) {
+                ctx.fillRect(line.x, line.y, line.width, line.height);
+            }
+        }
+
+        function spawnLine() {
+            const side = Math.floor(Math.random() * 4); // 0 = top, 1 = right, 2 = bottom, 3 = left
+            const speed = 3;
+            let line = { x: 0, y: 0, width: 0, height: 0, dx: 0, dy: 0 };
+
+            switch (side) {
+                case 0: // Top
+                    line = { x: Math.random() * canvas.width, y: 0, width: 5, height: 30, dx: 0, dy: speed };
+                    break;
+                case 1: // Right
+                    line = { x: canvas.width, y: Math.random() * canvas.height, width: 30, height: 5, dx: -speed, dy: 0 };
+                    break;
+                case 2: // Bottom
+                    line = { x: Math.random() * canvas.width, y: canvas.height, width: 5, height: 30, dx: 0, dy: -speed };
+                    break;
+                case 3: // Left
+                    line = { x: 0, y: Math.random() * canvas.height, width: 30, height: 5, dx: speed, dy: 0 };
+                    break;
+            }
+
+            lines.push(line);
+        }
+
+        function gameOver() {
+            if (score > highScore) {
+                highScore = score;
+                localStorage.setItem('highScore', highScore);
+            }
+            alert('Game Over! Your score: ' + score);
+            resetGame();
+        }
+
+        function resetGame() {
+            score = 0;
+            lives = 3;
+            redDot = { x: canvas.width / 16, y: canvas.height / 16, radius: 10, speed: 2 };
+            lines = [];
+            scoreboard.textContent = score;
+            highScoreBoard.textContent = highScore;
+        }
+
+        function loop() {
+            update();
+            draw();
+            requestAnimationFrame(loop);
+        }
+
+        setInterval(spawnLine, 1000);
+        loop();
+    </script>
+</body>
+</html>
