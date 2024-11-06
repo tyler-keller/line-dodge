@@ -16,7 +16,7 @@
             color: white;
         }
         canvas {
-            background-color: #222;
+            background-color: #333;
         }
         #scoreboard {
             position: absolute;
@@ -28,7 +28,6 @@
 <body>
     <div id="scoreboard">
         <div>High Score: <span id="current-highscore">0</span></div>
-        <div></div>
         <div>Round: <span id="current-round">1</span></div>
         <div>Lines: <span id="current-lines">0</span></div>
         <div>Score: <span id="current-score">0</span></div>
@@ -59,7 +58,7 @@
             2: 'yellow',
             3: 'orange',
             4: 'red',
-            5: 'purple',
+            5: 'violet',
         }
 
         scoreboardHighScore.textContent = highScore;
@@ -74,10 +73,10 @@
             if (keys['a'] || keys['arrowleft']) redDot.x -= moveSpeed;
             if (keys['d'] || keys['arrowright']) redDot.x += moveSpeed;
 
-                        redDot.x = Math.max(redDot.radius, Math.min(canvas.width - redDot.radius, redDot.x));
+            redDot.x = Math.max(redDot.radius, Math.min(canvas.width - redDot.radius, redDot.x));
             redDot.y = Math.max(redDot.radius, Math.min(canvas.height - redDot.radius, redDot.y));
 
-                        for (let i = lines.length - 1; i >= 0; i--) {
+            for (let i = lines.length - 1; i >= 0; i--) {
                 let line = lines[i];
                 line.x += line.dx;
                 line.y += line.dy;
@@ -89,7 +88,7 @@
                     scoreboardScore.textContent = score;
                 }
 
-                                if (redDot.x + redDot.radius > line.x && redDot.x - redDot.radius < line.x + line.width &&
+                if (redDot.x + redDot.radius > line.x && redDot.x - redDot.radius < line.x + line.width &&
                     redDot.y + redDot.radius > line.y && redDot.y - redDot.radius < line.y + line.height) {
                     lines.splice(i, 1);
                     lives -= 1;
@@ -103,7 +102,8 @@
 
             if (lines.length === 0 && round <= maxRounds) {
                 round++;
-                linesPerRound = Math.min(linesPerRound * 2, 3);                 scoreboardRound.textContent = round;
+                linesPerRound = Math.min(linesPerRound * 2, 3);                 
+                scoreboardRound.textContent = round;
                 if (round <= maxRounds) {
                     for (let i = 0; i < linesPerRound; i++) {
                         spawnLine();
@@ -116,13 +116,12 @@
 
         function draw() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-                        ctx.fillStyle = 'red';
+            ctx.fillStyle = 'red';
             ctx.beginPath();
             ctx.arc(redDot.x, redDot.y, redDot.radius, 0, Math.PI * 2);
             ctx.fill();
 
-                        ctx.fillStyle = roundColor[round];
+            ctx.fillStyle = roundColor[round];
             for (let line of lines) {
                 ctx.fillRect(line.x, line.y, line.width, line.height);
             }
