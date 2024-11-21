@@ -25,6 +25,38 @@
         }
     </style>
 </head>
+<style>
+    body {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+        overflow: hidden;
+        background-color: #111;
+        color: white;
+    }
+    canvas {
+        background-color: #333;
+    }
+    #scoreboard {
+        position: absolute;
+        top: 20px;
+        left: 20px;
+    }
+    #stamina-bar {
+        position: absolute;
+        bottom: 20px;
+        left: 20px;
+        width: 200px;
+        height: 20px;
+        background-color: #555;
+    }
+    #stamina-fill {
+        height: 100%;
+        background-color: green;
+    }
+</style>
 <body>
     <div id="scoreboard">
         <div>High Score: <span id="current-highscore">0</span></div>
@@ -32,6 +64,9 @@
         <div>Lines: <span id="current-lines">0</span></div>
         <div>Score: <span id="current-score">0</span></div>
         <div>Lives: <span id="current-lives">3</span></div>
+    </div>
+    <div id="stamina-bar">
+        <div id="stamina-fill" style="width: 100%;"></div>
     </div>
     <canvas id="gameCanvas" width="600" height="600"></canvas>
     <script>
@@ -43,7 +78,8 @@
         const scoreboardLines = document.getElementById('current-lines');
         const scoreboardScore = document.getElementById('current-score');
         const scoreboardLives = document.getElementById('current-lives');
-        
+        const staminaBar = document.getElementById('stamina-fill');
+
         let redDot = { x: canvas.width / 2, y: canvas.height / 2, radius: 8, speed: 2 };
         let keys = {};
         let lines = [];
@@ -61,13 +97,39 @@
             5: 'violet',
         }
 
+        // Stamina properties
+        let stamina = 100; // Max stamina
+        const staminaDepletionRate = 66; // Per second when sprinting
+        const staminaRegenRate = 33; // Per second when not sprinting
+        let canSprint = true;
+
         scoreboardHighScore.textContent = highScore;
 
         document.addEventListener('keydown', (e) => keys[e.key.toLowerCase()] = true);
         document.addEventListener('keyup', (e) => keys[e.key.toLowerCase()] = false);
 
         function update() {
-            let moveSpeed = keys['shift'] ? redDot.speed * 2 : redDot.speed;
+            let moveSpeed = redDot.speed;
+
+            // Sprint logic
+            if (keys['shift'] && canSprint && stamina > 0) {
+                moveSpeed *= 2;
+                stamina -= staminaDepletionRate / 60; // Deplete stamina (adjust for frame rate)
+                if (stamina <= 0) {
+                    stamina = 0;
+                    canSprint = false; // Prevent sprinting if out of stamina
+                }
+            } else {
+                stamina += staminaRegenRate / 60; // Regenerate stamina
+                if (stamina >= 100) {
+                    stamina = 100;
+                    canSprint = true; // Allow sprinting again when stamina is full
+                }
+            }
+
+            // Update stamina bar
+            staminaBar.style.width = `${stamina}%`;
+
             if (keys['w'] || keys['arrowup']) redDot.y -= moveSpeed;
             if (keys['s'] || keys['arrowdown']) redDot.y += moveSpeed;
             if (keys['a'] || keys['arrowleft']) redDot.x -= moveSpeed;
@@ -97,12 +159,12 @@
                         gameOver();
                         return;
                     }
-                } 
+                }
             }
 
             if (lines.length === 0 && round <= maxRounds) {
                 round++;
-                linesPerRound = Math.min(linesPerRound * 2, 3);                 
+                linesPerRound = Math.min(linesPerRound * 2, 3);
                 scoreboardRound.textContent = round;
                 if (round <= maxRounds) {
                     for (let i = 0; i < linesPerRound; i++) {
@@ -133,7 +195,7 @@
             let line = { x: 0, y: 0, width: 0, height: 0, dx: 0, dy: 0 };
 
             const maxSize = canvas.width / 2;
-            const randomSize = Math.random() * maxSize / 2 + maxSize / 4; 
+            const randomSize = Math.random() * maxSize / 2 + maxSize / 4;
             switch (side) {
                 case 0: // Top
                     var width = Math.floor(Math.random() * canvas.width);
@@ -141,7 +203,7 @@
                     var x = Math.floor(Math.random() * canvas.width);
                     var y = 0;
 
-                    line = { x: x, y: y, width: width, height: height, dx: 0, dy: speed};
+                    line = { x: x, y: y, width: width, height: height, dx: 0, dy: speed };
                     break;
                 case 1: // Right
                     var width = 20;
@@ -199,4 +261,3 @@
         loop();
     </script>
 </body>
-</html>
