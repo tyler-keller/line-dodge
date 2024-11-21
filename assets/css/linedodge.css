@@ -1,0 +1,30 @@
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    overflow: hidden;
+    background-color: #111;
+    color: white;
+}
+canvas {
+    background-color: #333;
+}
+#scoreboard {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+}
+#stamina-bar {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    width: 200px;
+    height: 20px;
+    background-color: #555;
+}
+#stamina-fill {
+    height: 100%;
+    background-color: green;
+}
