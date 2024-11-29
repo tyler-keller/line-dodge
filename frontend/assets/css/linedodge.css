@@ -28,3 +28,32 @@ canvas {
     height: 100%;
     background-color: green;
 }
+#iframe-bar-container {
+    position: absolute;
+    bottom: 60px;
+    left: 20px;
+    width: 200px;
+    height: 20px;
+    border: 2px solid black;
+    background-color: lightgray;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+#iframe-fill {
+    height: 100%;
+    width: 100%;
+    background-color: blue;
+    transform: scaleX(1);
+    transform-origin: left;
+    transition: transform 0.1s linear;
+}
+
+#iframe-timer {
+    position: absolute;
+    font-size: 14px;
+    font-weight: bold;
+    color: white;
+}

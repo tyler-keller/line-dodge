@@ -15,8 +15,15 @@ let score = 0;
 let highScore = localStorage.getItem('highScore') ? parseInt(localStorage.getItem('highScore')) : 0;
 let lives = 3;
 let round = 1;
-let maxRounds = 5;
+let maxRounds = 6; // +1 than playable rounds for end game logic
 let linesPerRound = 20;
+let linesLeft = linesPerRound;
+let lineSpeedMultiplier = 1;
+let maxLinesOnScreen = 5;
+let isInvincible = false; // Tracks if the player has iframes
+let iframeCooldown = false; // Tracks if the ability is on cooldown
+const iframeDuration = 750; // Duration of iframes in milliseconds
+const iframeCooldownTime = 3000; // Cooldown time in milliseconds
 let roundColor = {
     1: 'white',
     2: 'yellow',
@@ -33,8 +40,49 @@ let canSprint = true;
 
 scoreboardHighScore.textContent = highScore;
 
-document.addEventListener('keydown', (e) => keys[e.key.toLowerCase()] = true);
+document.addEventListener('keydown', (e) => {
+    const key = e.key.toLowerCase();
+    keys[key] = true;
+
+    // Trigger iframe action on spacebar press
+    if (key === ' ' && !iframeCooldown) {
+        activateIframes();
+    }
+});
+
 document.addEventListener('keyup', (e) => keys[e.key.toLowerCase()] = false);
+
+const iframeBar = document.getElementById('iframe-fill');
+const iframeTimer = document.getElementById('iframe-timer');
+
+function activateIframes() {
+    isInvincible = true;
+    iframeCooldown = true;
+
+    // Temporarily set invincibility
+    setTimeout(() => {
+        isInvincible = false;
+    }, iframeDuration);
+
+    // Start cooldown and update cooldown bar
+    let cooldownTimeLeft = iframeCooldownTime / 1000; // Convert to seconds
+    iframeBar.style.transform = 'scaleX(1)'; // Full bar
+    iframeTimer.textContent = cooldownTimeLeft.toFixed(1); // Initial time
+
+    const cooldownInterval = setInterval(() => {
+        cooldownTimeLeft -= 0.1; // Decrease by 0.1s
+        if (cooldownTimeLeft <= 0) {
+            clearInterval(cooldownInterval);
+            iframeCooldown = false; // Cooldown complete
+            iframeBar.style.transform = 'scaleX(0)'; // Empty bar
+            iframeTimer.textContent = '';
+        } else {
+            iframeBar.style.transform = `scaleX(${cooldownTimeLeft / (iframeCooldownTime / 1000)})`;
+            iframeTimer.textContent = cooldownTimeLeft.toFixed(1);
+        }
+    }, 100);
+}
+
 
 function update() {
     let moveSpeed = redDot.speed;
@@ -78,7 +126,9 @@ function update() {
             scoreboardScore.textContent = score;
         }
 
-        if (redDot.x + redDot.radius > line.x && redDot.x - redDot.radius < line.x + line.width &&
+        // Collision detection (skipped if invincible)
+        if (!isInvincible && 
+            redDot.x + redDot.radius > line.x && redDot.x - redDot.radius < line.x + line.width &&
             redDot.y + redDot.radius > line.y && redDot.y - redDot.radius < line.y + line.height) {
             lines.splice(i, 1);
             lives -= 1;
@@ -90,23 +140,29 @@ function update() {
         }
     }
 
-    if (lines.length === 0 && round <= maxRounds) {
-        round++;
-        linesPerRound = Math.min(linesPerRound * 2, 3);
-        scoreboardRound.textContent = round;
-        if (round <= maxRounds) {
-            for (let i = 0; i < linesPerRound; i++) {
-                spawnLine();
-            }
-        } else {
+    while (lines.length < maxLinesOnScreen) {
+        linesLeft -= 1;
+        scoreboardLines.textContent = linesLeft;
+        spawnLine();
+    }
+
+    if (linesLeft == 0 && round <= maxRounds) {
+        if (round == maxRounds) {
             gameOver();
         }
+
+        round++;
+        linesPerRound = linesPerRound * 2;
+        linesLeft = linesPerRound;
+        lineSpeedMultiplier += 0.05;
+        scoreboardRound.textContent = round;
     }
 }
 
 function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.fillStyle = 'red';
+    // Draw redDot with a special effect during iframes
+    ctx.fillStyle = isInvincible ? 'rgba(255, 0, 0, 0.5)' : 'red';
     ctx.beginPath();
     ctx.arc(redDot.x, redDot.y, redDot.radius, 0, Math.PI * 2);
     ctx.fill();
@@ -119,11 +175,9 @@ function draw() {
 
 function spawnLine() {
     const side = Math.floor(Math.random() * 4); // 0 = top, 1 = right, 2 = bottom, 3 = left
-    const speed = Math.random() * 1 + 3;
+    const speed = (Math.random() * 1 + 3) * lineSpeedMultiplier;
     let line = { x: 0, y: 0, width: 0, height: 0, dx: 0, dy: 0 };
 
-    const maxSize = canvas.width / 2;
-    const randomSize = Math.random() * maxSize / 2 + maxSize / 4;
     switch (side) {
         case 0: // Top
             var width = Math.floor(Math.random() * canvas.width);
