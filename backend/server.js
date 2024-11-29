@@ -4,13 +4,18 @@ const path = require('path');
 const app = express();
 const PORT = 5009;
 
-// serve static files
-app.use(express.static(path.join(__dirname)));
+// serve static files from the frontend directory
+app.use(express.static(path.join(__dirname, '../frontend')));
 
+// serve assets explicitly
+app.use('/assets', express.static(path.join(__dirname, '../frontend/assets')));
+
+// serve index.html for the root route
 app.get('/', (req, res) => {
-    res.sendFile('/var/www/line-dodge/frontend/index.html');
+    res.sendFile(path.join(__dirname, '../frontend/index.html'));
 });
 
+// start the server
 app.listen(PORT, () => {
     console.log(`server running on http://localhost:${PORT}`);
 });
