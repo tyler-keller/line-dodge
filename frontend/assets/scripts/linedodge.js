@@ -8,11 +8,13 @@ const scoreboardScore = document.getElementById('current-score');
 const scoreboardLives = document.getElementById('current-lives');
 const staminaBar = document.getElementById('stamina-fill');
 
+let highScore = localStorage.getItem('highScore') ? parseInt(localStorage.getItem('highScore')) : 0;
+scoreboardHighScore.textContent = highScore;
+
 let redDot = { x: canvas.width / 2, y: canvas.height / 2, radius: 8, speed: 2 };
 let keys = {};
 let lines = [];
 let score = 0;
-let highScore = localStorage.getItem('highScore') ? parseInt(localStorage.getItem('highScore')) : 0;
 let lives = 3;
 let round = 1;
 let maxRounds = 6; // +1 than playable rounds for end game logic
@@ -31,14 +33,13 @@ let roundColor = {
     4: 'red',
     5: 'violet',
 }
+let isFlashing = false; // Tracks if the red dot is flashing
 
 // Stamina properties
 let stamina = 100; // Max stamina
 const staminaDepletionRate = 66; // Per second when sprinting
 const staminaRegenRate = 33; // Per second when not sprinting
 let canSprint = true;
-
-scoreboardHighScore.textContent = highScore;
 
 document.addEventListener('keydown', (e) => {
     const key = e.key.toLowerCase();
@@ -83,6 +84,22 @@ function activateIframes() {
     }, 100);
 }
 
+function startFlashing() {
+    isFlashing = true;
+    let flashDuration = 1000; // Total flashing time in milliseconds
+    let flashInterval = 100; // Flash every 100ms
+    let flashes = flashDuration / flashInterval;
+    let flashCount = 0;
+
+    const flashIntervalId = setInterval(() => {
+        flashCount++;
+        isFlashing = !isFlashing; // Toggle visibility
+        if (flashCount >= flashes) {
+            clearInterval(flashIntervalId); // Stop flashing after the duration
+            isFlashing = false; // Ensure visibility is restored
+        }
+    }, flashInterval);
+}
 
 function update() {
     let moveSpeed = redDot.speed;
@@ -137,6 +154,7 @@ function update() {
                 gameOver();
                 return;
             }
+            startFlashing();
         }
     }
 
@@ -161,11 +179,14 @@ function update() {
 
 function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    // Draw redDot with a special effect during iframes
-    ctx.fillStyle = isInvincible ? 'rgba(255, 0, 0, 0.5)' : 'red';
-    ctx.beginPath();
-    ctx.arc(redDot.x, redDot.y, redDot.radius, 0, Math.PI * 2);
-    ctx.fill();
+
+    // Draw redDot with a special effect during iframes or flashing
+    if (!isFlashing || Math.floor(performance.now() / 100) % 2 === 0) {
+        ctx.fillStyle = isInvincible ? 'rgba(255, 0, 0, 0.5)' : 'red';
+        ctx.beginPath();
+        ctx.arc(redDot.x, redDot.y, redDot.radius, 0, Math.PI * 2);
+        ctx.fill();
+    }
 
     ctx.fillStyle = roundColor[round];
     for (let line of lines) {
