@@ -11,22 +11,30 @@
 <body>
     <header>
         <h1>LINE DODGE</h1>
-        <div id="scoreboard">
-            <div>High Score: <span id="current-highscore">0</span></div>
-            <div>Round: <span id="current-round">1</span></div>
-            <div>Lines: <span id="current-lines">0</span></div>
-            <div>Score: <span id="current-score">0</span></div>
-            <div>Lives: <span id="current-lives">3</span></div>
-        </div>
     </header>
+    <main>
+        <div id="main-menu">
+            <button>START</button>
+            <button>HOW TO PLAY</button>
+        </div>
+        <div id="game">
+            <div id="scoreboard">
+                <div>High Score: <span id="current-highscore">0</span></div>
+                <div>Round: <span id="current-round">1</span></div>
+                <div>Lines: <span id="current-lines">0</span></div>
+                <div>Score: <span id="current-score">0</span></div>
+                <div>Lives: <span id="current-lives">3</span></div>
+            </div>
+            <div id="stamina-bar">
+                <div id="stamina-fill" style="width: 100%;"></div>
+            </div>
+            <div id="iframe-bar-container">
+                <div id="iframe-fill"></div>
+                <span id="iframe-timer"></span>
+            </div>
+            <canvas id="gameCanvas" width="600" height="600"></canvas>
+        </div>
+    </main>
     
-    <div id="stamina-bar">
-        <div id="stamina-fill" style="width: 100%;"></div>
-    </div>
-    <div id="iframe-bar-container">
-        <div id="iframe-fill"></div>
-        <span id="iframe-timer"></span>
-    </div>
-    <canvas id="gameCanvas" width="600" height="600"></canvas>
     <script src="./assets/scripts/linedodge.js"></script>
 </body>
