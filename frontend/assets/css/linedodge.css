@@ -1,20 +1,37 @@
 body {
     display: flex;
-    justify-content: center;
+    flex-direction: column;
+    justify-content: start;
     align-items: center;
+    gap: 1em;
     height: 100vh;
     margin: 0;
     overflow: hidden;
     background-color: #111;
     color: white;
+    font-family: 'Pixelify Sans', sans-serif;
 }
 canvas {
     background-color: #333;
 }
+
+header {
+    display: flex;
+    flex-direction: column;
+    text-align: center;
+
+}
+
+header h1 {
+    font-size: 3rem;
+    margin: 1rem;
+}
+
 #scoreboard {
-    position: absolute;
-    top: 20px;
-    left: 20px;
+    display: flex;
+    flex-direction: row;
+    gap: 2rem;
+    font-size: large;
 }
 #stamina-bar {
     position: absolute;
