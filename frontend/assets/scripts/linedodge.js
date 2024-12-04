@@ -25,7 +25,7 @@ const iframeTimer = document.getElementById('iframe-timer');
 let highScore = localStorage.getItem('highScore') ? parseInt(localStorage.getItem('highScore')) : 0;
 scoreboardHighScore.textContent = highScore;
 
-let redDot = { x: canvas.width / 2, y: canvas.height / 2, radius: 8, speed: 2 };
+let redDot = { x: canvas.width / 2, y: canvas.height / 2, radius: 8, speed: 150 };
 let keys = {};
 let lines = [];
 let score = 0;
@@ -158,26 +158,28 @@ function loop() {
         }, flashInterval);
     }
     
-    function update() {
-        let moveSpeed = redDot.speed;
+    let lastTime = 0;
+
+    function update(deltaTime) {
+        let moveSpeed = redDot.speed * deltaTime; // adjust speed by delta time
     
-        // Sprint logic
+        // sprint logic
         if (keys['shift'] && canSprint && stamina > 0) {
             moveSpeed *= 2;
-            stamina -= staminaDepletionRate / 60; // Deplete stamina (adjust for frame rate)
+            stamina -= (staminaDepletionRate * deltaTime); // adjust stamina depletion
             if (stamina <= 0) {
                 stamina = 0;
-                canSprint = false; // Prevent sprinting if out of stamina
+                canSprint = false; // prevent sprinting if out of stamina
             }
         } else {
-            stamina += staminaRegenRate / 60; // Regenerate stamina
+            stamina += (staminaRegenRate * deltaTime); // adjust stamina regeneration
             if (stamina >= 100) {
                 stamina = 100;
-                canSprint = true; // Allow sprinting again when stamina is full
+                canSprint = true; // allow sprinting again when stamina is full
             }
         }
     
-        // Update stamina bar
+        // update stamina bar
         staminaBar.style.width = `${stamina}%`;
     
         if (keys['w'] || keys['arrowup']) redDot.y -= moveSpeed;
@@ -185,14 +187,17 @@ function loop() {
         if (keys['a'] || keys['arrowleft']) redDot.x -= moveSpeed;
         if (keys['d'] || keys['arrowright']) redDot.x += moveSpeed;
     
+        // keep the redDot within bounds
         redDot.x = Math.max(redDot.radius, Math.min(canvas.width - redDot.radius, redDot.x));
         redDot.y = Math.max(redDot.radius, Math.min(canvas.height - redDot.radius, redDot.y));
     
+        // update lines
         for (let i = lines.length - 1; i >= 0; i--) {
             let line = lines[i];
-            line.x += line.dx;
-            line.y += line.dy;
+            line.x += line.dx * deltaTime; // adjust line movement by delta time
+            line.y += line.dy * deltaTime;
     
+            // remove lines that leave the screen and update score
             if ((line.dx > 0 && line.x > canvas.width) || (line.dx < 0 && line.x + line.width < 0) ||
                 (line.dy > 0 && line.y > canvas.height) || (line.dy < 0 && line.y + line.height < 0)) {
                 lines.splice(i, 1);
@@ -200,8 +205,8 @@ function loop() {
                 scoreboardScore.textContent = score;
             }
     
-            // Collision detection (skipped if invincible)
-            if (!isInvincible && 
+            // collision detection (skipped if invincible)
+            if (!isInvincible &&
                 redDot.x + redDot.radius > line.x && redDot.x - redDot.radius < line.x + line.width &&
                 redDot.y + redDot.radius > line.y && redDot.y - redDot.radius < line.y + line.height) {
                 lines.splice(i, 1);
@@ -215,12 +220,14 @@ function loop() {
             }
         }
     
+        // spawn new lines if needed
         while (lines.length < maxLinesOnScreen) {
             linesLeft -= 1;
             scoreboardLines.textContent = linesLeft;
             spawnLine();
         }
     
+        // handle round progression
         if (linesLeft == 0 && round <= maxRounds) {
             if (round == maxRounds) {
                 gameOver();
@@ -253,7 +260,7 @@ function loop() {
     
     function spawnLine() {
         const side = Math.floor(Math.random() * 4); // 0 = top, 1 = right, 2 = bottom, 3 = left
-        const speed = (Math.random() * 1 + 3) * lineSpeedMultiplier;
+        const speed = (Math.random() * 50 + 150) * lineSpeedMultiplier;
         let line = { x: 0, y: 0, width: 0, height: 0, dx: 0, dy: 0 };
     
         switch (side) {
@@ -307,9 +314,13 @@ function loop() {
         location.reload();
     }
     
-    function loop() {
-        update();
+    function loop(timestamp) {
+        let deltaTime = (timestamp - lastTime) / 1000; // time difference in seconds
+        lastTime = timestamp;
+    
+        update(deltaTime);
         draw();
+    
         requestAnimationFrame(loop);
     }
     
@@ -318,7 +329,8 @@ function loop() {
             spawnLine();
         }
     }, 1000);
-    loop();
+
+    // loop();
 
     requestAnimationFrame(loop);
 }
