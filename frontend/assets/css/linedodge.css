@@ -40,10 +40,10 @@ header h1 {
 }
 #stamina-bar {
     position: absolute;
-    bottom: 20px;
+    bottom: 5rem;
     left: 20px;
     width: 200px;
-    height: 20px;
+    height: 1.5em;
     background-color: #555;
 }
 #stamina-fill {
@@ -52,11 +52,10 @@ header h1 {
 }
 #iframe-bar-container {
     position: absolute;
-    bottom: 60px;
+    bottom: 7rem;
     left: 20px;
     width: 200px;
-    height: 20px;
-    border: 2px solid black;
+    height: 1.5em;
     background-color: lightgray;
     display: flex;
     align-items: center;
@@ -154,7 +153,6 @@ button:hover{
     align-items: center;
     top: 0;
     left: 0;
-    z-index: 1;
     width: 100vw;
     height: 100vh;
     overflow: auto; /* Enable scroll if needed */
@@ -206,6 +204,7 @@ button:hover{
     align-items: center;
     justify-content: center;
     gap: 4px;
+    margin-bottom: 4px;
 }
 
 .shift-container {
@@ -236,4 +235,31 @@ button:hover{
     display: flex;
     flex-direction: row;
     gap: 4px;
+}
+
+#home-button{
+    position: absolute;
+    top: 3rem;
+    left: 3rem;
+}
+
+#home-button button {
+    font-family: 'Pixelify Sans', sans-serif;
+    background-color: black;
+    border: 4px solid white;
+    color: white;
+    font-size: x-large;
+    width: 2.5em;
+    height: 2.5em;
+    cursor: pointer;
+    transition: 0.5s;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#home-button button:hover{
+    background: white ;
+    animation: Animate 0.8s steps(8) forwards;
+    color:black;
 }

@@ -20,6 +20,7 @@ const scoreboardLives = document.getElementById('current-lives');
 const staminaBar = document.getElementById('stamina-fill');
 const iframeBar = document.getElementById('iframe-fill');
 const iframeTimer = document.getElementById('iframe-timer');
+const homeBtn = document.getElementById("home-button");
 
 //Gameplay Variables
 let highScore = localStorage.getItem('highScore') ? parseInt(localStorage.getItem('highScore')) : 0;
@@ -54,6 +55,11 @@ let stamina = 100; // Max stamina
 const staminaDepletionRate = 66; // Per second when sprinting
 const staminaRegenRate = 33; // Per second when not sprinting
 let canSprint = true;
+
+//home button
+homeBtn.onclick = function() {
+    location.reload();
+}
 
 // Initialize Game State
 function init() {
