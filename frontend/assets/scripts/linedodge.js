@@ -25,7 +25,7 @@ const iframeTimer = document.getElementById('iframe-timer');
 let highScore = localStorage.getItem('highScore') ? parseInt(localStorage.getItem('highScore')) : 0;
 scoreboardHighScore.textContent = highScore;
 
-let redDot = { x: canvas.width / 2, y: canvas.height / 2, radius: 8, speed: 150 };
+let player = { x: canvas.width / 2, y: canvas.height / 2, radius: 18, speed: 150 };
 let keys = {};
 let lines = [];
 let score = 0;
@@ -161,7 +161,7 @@ function loop() {
     let lastTime = 0;
 
     function update(deltaTime) {
-        let moveSpeed = redDot.speed * deltaTime; // adjust speed by delta time
+        let moveSpeed = player.speed * deltaTime; // adjust speed by delta time
     
         // sprint logic
         if (keys['shift'] && canSprint && stamina > 0) {
@@ -182,14 +182,14 @@ function loop() {
         // update stamina bar
         staminaBar.style.width = `${stamina}%`;
     
-        if (keys['w'] || keys['arrowup']) redDot.y -= moveSpeed;
-        if (keys['s'] || keys['arrowdown']) redDot.y += moveSpeed;
-        if (keys['a'] || keys['arrowleft']) redDot.x -= moveSpeed;
-        if (keys['d'] || keys['arrowright']) redDot.x += moveSpeed;
+        if (keys['w'] || keys['arrowup']) player.y -= moveSpeed;
+        if (keys['s'] || keys['arrowdown']) player.y += moveSpeed;
+        if (keys['a'] || keys['arrowleft']) player.x -= moveSpeed;
+        if (keys['d'] || keys['arrowright']) player.x += moveSpeed;
     
-        // keep the redDot within bounds
-        redDot.x = Math.max(redDot.radius, Math.min(canvas.width - redDot.radius, redDot.x));
-        redDot.y = Math.max(redDot.radius, Math.min(canvas.height - redDot.radius, redDot.y));
+        // keep the player within bounds
+        player.x = Math.max(player.radius, Math.min(canvas.width - player.radius, player.x));
+        player.y = Math.max(player.radius, Math.min(canvas.height - player.radius, player.y));
     
         // update lines
         for (let i = lines.length - 1; i >= 0; i--) {
@@ -207,8 +207,8 @@ function loop() {
     
             // collision detection (skipped if invincible)
             if (!isInvincible &&
-                redDot.x + redDot.radius > line.x && redDot.x - redDot.radius < line.x + line.width &&
-                redDot.y + redDot.radius > line.y && redDot.y - redDot.radius < line.y + line.height) {
+                player.x + player.radius > line.x && player.x - player.radius < line.x + line.width &&
+                player.y + player.radius > line.y && player.y - player.radius < line.y + line.height) {
                 lines.splice(i, 1);
                 lives -= 1;
                 scoreboardLives.textContent = lives;
@@ -244,11 +244,11 @@ function loop() {
     function draw() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
     
-        // Draw redDot with a special effect during iframes or flashing
+        // Draw player with a special effect during iframes or flashing
         if (!isFlashing || Math.floor(performance.now() / 100) % 2 === 0) {
-            ctx.fillStyle = isInvincible ? 'rgba(255, 0, 0, 0.5)' : 'red';
+            ctx.fillStyle = isInvincible ? 'rgba(255, 255, 255, 0.5)' : 'white';
             ctx.beginPath();
-            ctx.arc(redDot.x, redDot.y, redDot.radius, 0, Math.PI * 2);
+            ctx.fillRect(player.x, player.y, player.radius, player.radius);
             ctx.fill();
         }
     

@@ -14,8 +14,11 @@
     </header>
     <main>
         <div id="main-menu">
-            <button>START</button>
-            <button>HOW TO PLAY</button>
+            <div class="menu-buttons">
+                <button>START</button>
+                <button id="open-btn">HOW TO PLAY</button>
+            </div>
+            
         </div>
         <div id="game">
             <div id="scoreboard">
@@ -35,6 +38,12 @@
             <canvas id="gameCanvas" width="600" height="600"></canvas>
         </div>
     </main>
-    
+    <div id="how-to-play" class="htp">
+        <div class="htp-content">
+            <span class="close">x</span>
+            <h1 style="text-align: center;">How To Play</h1>
+        </div>
+    </div>
     <script src="./assets/scripts/linedodge.js"></script>
+    <script src="./assets/scripts/howtoplay.js"></script>
 </body>
