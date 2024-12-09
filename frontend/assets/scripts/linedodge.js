@@ -243,14 +243,19 @@ function loop() {
     
     function draw() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        canvas.style.borderColor = roundColor[round];
     
         // Draw player with a special effect during iframes or flashing
         if (!isFlashing || Math.floor(performance.now() / 100) % 2 === 0) {
-            ctx.fillStyle = isInvincible ? 'rgba(255, 255, 255, 0.5)' : 'white';
+            ctx.fillStyle = roundColor[round];
+            ctx.globalAlpha = isInvincible ? 0.3 : 1.0;
             ctx.beginPath();
             ctx.arc(player.x, player.y, player.radius, 0, Math.PI * 2);
             ctx.fill();
         }
+
+        ctx.globalAlpha = 1.0;
     
         ctx.fillStyle = roundColor[round];
         for (let line of lines) {
