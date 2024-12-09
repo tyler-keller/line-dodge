@@ -25,7 +25,7 @@ const iframeTimer = document.getElementById('iframe-timer');
 let highScore = localStorage.getItem('highScore') ? parseInt(localStorage.getItem('highScore')) : 0;
 scoreboardHighScore.textContent = highScore;
 
-let player = { x: canvas.width / 2, y: canvas.height / 2, radius: 18, speed: 150 };
+let player = { x: canvas.width / 2, y: canvas.height / 2, radius: 8, speed: 150 };
 let keys = {};
 let lines = [];
 let score = 0;
@@ -248,7 +248,7 @@ function loop() {
         if (!isFlashing || Math.floor(performance.now() / 100) % 2 === 0) {
             ctx.fillStyle = isInvincible ? 'rgba(255, 255, 255, 0.5)' : 'white';
             ctx.beginPath();
-            ctx.fillRect(player.x, player.y, player.radius, player.radius);
+            ctx.arc(player.x, player.y, player.radius, 0, Math.PI * 2);
             ctx.fill();
         }
     

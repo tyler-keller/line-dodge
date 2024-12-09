@@ -168,7 +168,6 @@ button:hover{
     border: 4px solid white;
     width: 60%;
     height: 60%;
-
 }
 
 .close {
@@ -184,4 +183,56 @@ button:hover{
     color: #aaaaaa;
     text-decoration: none;
     cursor: pointer;
+}
+
+.movement {
+    width: 50%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.movement p{
+    font-size: large;
+}
+
+.move-container {
+    border: 4px solid white;
+    width: 4em;
+    height: 4em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+}
+
+.shift-container {
+    border: 4px solid white;
+    padding-left: 2rem;
+    padding-right: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+}
+
+.space-container {
+    border: 4px solid white;
+    padding-left: 6rem;
+    padding-right: 6rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+}
+
+.move-letter {
+    font-size: x-large;
+}
+
+.horizontal {
+    display: flex;
+    flex-direction: row;
+    gap: 4px;
 }
