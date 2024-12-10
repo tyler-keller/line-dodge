@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Line Dodge Game</title>
+    <title>Line Dodge</title>
     <meta name="description" content="Line Dodge is a game where you avoid obstacles and earn points."/>
     <link rel="icon" type="image" href="./assets/images/thumbnail.png">
     <link rel="stylesheet" href="./assets/css/linedodge.css">
@@ -16,13 +16,12 @@
         <div id="main-menu">
             <header id="main-menu-header">
                 <h1>LINE DODGE</h1>
-                <p>High Score: <span id="current-highscore">0</span></p>
+                <p>High Score: <span id="past-highscore" class="integer-font">0</span></p>
             </header>
             <div class="menu-buttons">
                 <button>START</button>
                 <button id="open-btn">HOW TO PLAY</button>
             </div>
-            
         </div>
         <div id="game">
             <header>
@@ -32,11 +31,11 @@
                 <button><span><</span></button>
             </div>
             <div id="scoreboard">
-                <div>High Score: <span id="current-highscore">0</span></div>
-                <div>Round: <span id="current-round">1</span></div>
-                <div>Lines: <span id="current-lines">0</span></div>
-                <div>Score: <span id="current-score">0</span></div>
-                <div>Lives: <span id="current-lives">3</span></div>
+                <div>High Score: <span id="current-highscore" class="integer-font">0</span></div>
+                <div>Round: <span id="current-round" class="integer-font">1</span></div>
+                <div>Lines: <span id="current-lines" class="integer-font">0</span></div>
+                <div>Score: <span id="current-score" class="integer-font">0</span></div>
+                <div>Lives: <span id="current-lives" class="integer-font">3</span></div>
             </div>
             <div id="stamina-bar">
                 <div id="stamina-fill" style="width: 100%;"></div>
@@ -46,6 +45,18 @@
                 <span id="iframe-timer"></span>
             </div>
             <canvas id="gameCanvas" width="600" height="600"></canvas>
+        </div>
+        <div id="end-game-modal" style="display: none;">
+            <div id="end-game-content">
+                <h1 id="end-game-message"></h1>
+                <p id="end-game-score" class="integer-font"></p>
+                <p id="end-game-highscore" class="integer-font"></p>
+                <button id="main-menu-button">Main Menu</button>
+                <button id="play-again-button">Play Again</button>
+            </div>
+        </div>
+        <div id="pause-overlay" style="display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.8); color: white; font-size: 48px; text-align: center; line-height: 100vh; z-index: 10;">
+            paused. press escape to resume.
         </div>
     </main>
     <div id="how-to-play" class="htp">

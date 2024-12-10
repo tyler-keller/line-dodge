@@ -4,6 +4,7 @@ const GAME_STATES = {
     PLAYING: 'PLAYING',
     PAUSED: 'PAUSED',
     END_GAME: 'END_GAME',
+    END_ROUND: 'END_ROUND',
 };
 
 let currentState = GAME_STATES.MAIN_MENU; // Start at main menu
@@ -12,9 +13,11 @@ let currentState = GAME_STATES.MAIN_MENU; // Start at main menu
 const mainMenu = document.getElementById('main-menu');
 const gameContainer = document.getElementById('game');
 const canvas = document.getElementById('gameCanvas');
+const pauseOverlay = document.getElementById('pause-overlay');
 const ctx = canvas.getContext('2d');
 
 const scoreboardHighScore = document.getElementById('current-highscore');
+const menuHighScore = document.getElementById('past-highscore');
 const scoreboardRound = document.getElementById('current-round');
 const scoreboardLines = document.getElementById('current-lines');
 const scoreboardScore = document.getElementById('current-score');
@@ -26,7 +29,9 @@ const homeBtn = document.getElementById("home-button");
 
 //Gameplay Variables
 let highScore = localStorage.getItem('highScore') ? parseInt(localStorage.getItem('highScore')) : 0;
+console.log(`LOG: highscore from localstorage pull: ${highScore}`)
 scoreboardHighScore.textContent = highScore;
+menuHighScore.textContent = highScore;
 
 let player = { x: canvas.width / 2, y: canvas.height / 2, radius: 8, speed: 150 };
 let keys = {};
@@ -35,7 +40,7 @@ let score = 0;
 let lives = 3;
 let round = 1;
 let maxRounds = 6; // +1 than playable rounds for end game logic; hacky ik... ...
-let linesPerRound = 20;
+let linesPerRound = 5;
 let linesLeft = linesPerRound;
 let lineSpeedMultiplier = 1;
 let maxLinesOnScreen = 5;
@@ -47,10 +52,12 @@ let roundColor = {
     1: 'white',
     2: 'yellow',
     3: 'orange',
-    4: 'red',
+    4: 'orangered',
     5: 'violet',
+    6: 'violet',
 }
 let isFlashing = false; // Tracks if the red dot is flashing
+let pauseTime = 0; // time when the game was paused
 
 // Stamina properties
 let stamina = 100; // Max stamina
@@ -72,6 +79,14 @@ function init() {
         const key = e.key.toLowerCase();
         keys[key] = true;
 
+        if (key === 'escape') {
+            if (currentState === GAME_STATES.PLAYING) {
+                updateState(GAME_STATES.PAUSED);
+            } else if (currentState === GAME_STATES.PAUSED) {
+                updateState(GAME_STATES.PLAYING);
+            }
+        }
+
         // trigger iframe action on spacebar press
         if (key === ' ' && !iframeCooldown) {
             activateIframes();
@@ -84,6 +99,24 @@ function init() {
 
     // add event listener for the main menu button
     document.querySelector('#main-menu button:first-child').addEventListener('click', startGame);
+}
+
+function resetGame() {
+    player = { x: canvas.width / 2, y: canvas.height / 2, radius: 8, speed: 150 };
+    lines = [];
+    score = 0;
+    lives = 3;
+    round = 1;
+    linesPerRound = 20;
+    linesLeft = linesPerRound;
+    lineSpeedMultiplier = 1;
+
+    scoreboardScore.textContent = score;
+    scoreboardLives.textContent = lives;
+    scoreboardRound.textContent = round;
+    scoreboardLines.textContent = linesLeft;
+
+    clearCanvas();
 }
 
 // State Transition Function
@@ -99,7 +132,23 @@ function updateState(newState) {
         case GAME_STATES.PLAYING:
             mainMenu.style.display = 'none';
             gameContainer.style.display = 'block';
-            startGameplay();
+            pauseOverlay.style.display = 'none';
+            if (pauseTime) {
+                lastTime += performance.now() - pauseTime;
+                pauseTime = 0;
+            }
+            if (lastTime === 0) {
+                startGameplay();
+            } else {
+                requestAnimationFrame(loop);
+            }
+            break;
+        
+        case GAME_STATES.PAUSED:
+            console.log('Game paused!');
+            mainMenu.style.display = 'none';
+            pauseOverlay.style.display = 'block';
+            pauseTime = performance.now(); // record when the game was paused
             break;
     }
 }
@@ -130,8 +179,6 @@ function startCountdown(callback) {
     drawCountdown();
 }
 
-
-// Start Game Function
 function clearCanvas() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 }
@@ -148,74 +195,54 @@ function showMainMenu() {
 
 function startGameplay() {
     console.log('Game started!');
+    resetGame();
     startCountdown(() => {
-        // Set up line spawning
-        setInterval(() => {
-            if (lines.length < maxLinesOnScreen) {
-                spawnLine();
-            }
-        }, 1000);
-
-        // Start the game loop
-        lastTime = performance.now(); // Initialize timestamp
+        lastTime = performance.now();
         requestAnimationFrame(loop);
     });
 }
 
 function gameOver() {
-    currentState = GAME_STATES.END_GAME
+    currentState = GAME_STATES.END_GAME;
+    lastTime = 0;
 
-    // clear the canvas
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    // Show modal
+    const endGameModal = document.getElementById('end-game-modal');
+    const endGameMessage = document.getElementById('end-game-message');
+    const endGameScore = document.getElementById('end-game-score');
+    const endGameHighscore = document.getElementById('end-game-highscore');
+    const mainMenuButton = document.getElementById('main-menu-button');
+    const playAgainButton = document.getElementById('play-again-button');
 
-    // display a game over message
-    ctx.fillStyle = 'black';
-    ctx.font = '48px Arial';
-    ctx.textAlign = 'center';
-    ctx.fillText(round == maxRounds ? 'You Won!' : 'Game Over', canvas.width / 2, canvas.height / 3);
-    ctx.font = '32px Arial';
-    ctx.fillText('Your score: ' + score, canvas.width / 2, canvas.height / 2);
-
-    if (round == maxRounds) {
+    // Set modal content
+    endGameMessage.textContent = round === maxRounds ? 'You Won!' : 'Game Over';
+    endGameScore.textContent = `Your score: ${score}`;
+    if (round === maxRounds) {
         score *= 69;
-        ctx.fillText('69x score multiplier applied! Final Score: ' + score, canvas.width / 2, canvas.height / 1.8);
+        endGameScore.textContent += ` (69x multiplier applied! Final Score: ${score})`;
     }
 
-    // save high score if applicable
     if (score > highScore) {
         highScore = score;
         localStorage.setItem('highScore', highScore);
-        ctx.fillText('New High Score!', canvas.width / 2, canvas.height / 1.6);
+        menuHighScore.textContent = highScore;
+        endGameHighscore.textContent = 'New High Score!';
+    } else {
+        endGameHighscore.textContent = `High Score: ${highScore}`;
     }
 
-    // create buttons
-    createButton('Main Menu', canvas.width / 2 - 100, canvas.height / 1.3, () => {
-        // resetGame();
+    endGameModal.style.display = 'flex';
+
+    // Button handlers
+    mainMenuButton.onclick = () => {
+        endGameModal.style.display = 'none';
         showMainMenu();
-    });
-    createButton('Play Again', canvas.width / 2 + 100, canvas.height / 1.3, () => {
-        // resetGame();
+    };
+
+    playAgainButton.onclick = () => {
+        endGameModal.style.display = 'none';
         startGame();
-    });
-}
-
-// helper function to create buttons
-function createButton(text, x, y, onClick) {
-    const button = document.createElement('button');
-    button.textContent = text;
-    button.style.position = 'absolute';
-    button.style.left = `${x}px`;
-    button.style.top = `${y}px`;
-    button.style.padding = '10px 20px';
-    button.style.fontSize = '16px';
-    button.style.cursor = 'pointer';
-    button.style.transform = 'translate(-50%, -50%)'; // center the button
-    document.body.appendChild(button);
-
-    button.addEventListener('click', () => {
-        button.remove(); // remove button after clicking
-        onClick();
-    });
+    };
 }
 
 function activateIframes() {
@@ -340,6 +367,7 @@ function update(deltaTime) {
 
         round++;
         linesPerRound = linesPerRound * 2;
+        // linesPerRound = linesPerRound;
         linesLeft = linesPerRound;
         lineSpeedMultiplier += 0.05;
         scoreboardRound.textContent = round;
@@ -353,7 +381,7 @@ function draw() {
 
     // Draw player with a special effect during iframes or flashing
     if (!isFlashing || Math.floor(performance.now() / 100) % 2 === 0) {
-        ctx.fillStyle = roundColor[round];
+        ctx.fillStyle = 'lime';
         ctx.globalAlpha = isInvincible ? 0.3 : 1.0;
         ctx.beginPath();
         ctx.arc(player.x, player.y, player.radius, 0, Math.PI * 2);
@@ -424,5 +452,4 @@ function loop(timestamp) {
     requestAnimationFrame(loop); // continue the loop
 }
 
-// Initialize the app
 init();
