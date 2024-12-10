@@ -2,6 +2,8 @@
 const GAME_STATES = {
     MAIN_MENU: 'MAIN_MENU',
     PLAYING: 'PLAYING',
+    PAUSED: 'PAUSED',
+    END_GAME: 'END_GAME',
 };
 
 let currentState = GAME_STATES.MAIN_MENU; // Start at main menu
@@ -61,13 +63,27 @@ homeBtn.onclick = function() {
     location.reload();
 }
 
-// Initialize Game State
 function init() {
-    // Set up initial state
+    // set up initial state
     updateState(GAME_STATES.MAIN_MENU);
 
-    // Add event listeners
-    document.querySelector('#main-menu button:first-child').addEventListener('click', startGame); // Start button
+    // add event listeners for controls
+    document.addEventListener('keydown', (e) => {
+        const key = e.key.toLowerCase();
+        keys[key] = true;
+
+        // trigger iframe action on spacebar press
+        if (key === ' ' && !iframeCooldown) {
+            activateIframes();
+        }
+    });
+
+    document.addEventListener('keyup', (e) => {
+        keys[e.key.toLowerCase()] = false;
+    });
+
+    // add event listener for the main menu button
+    document.querySelector('#main-menu button:first-child').addEventListener('click', startGame);
 }
 
 // State Transition Function
@@ -94,7 +110,7 @@ function startCountdown(callback) {
     let countdown = 3; // Start from 3
     ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear canvas
     ctx.fillStyle = 'white'; // Set text color
-    ctx.font = '128px "Pixelify Sans"'; // Set font and size
+    ctx.font = '128px "Aldrich"'; // Set font and size
     ctx.textAlign = 'center'; // Center align text
     ctx.textBaseline = 'middle'; // Middle align text
 
@@ -116,267 +132,297 @@ function startCountdown(callback) {
 
 
 // Start Game Function
+function clearCanvas() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+}
+
 function startGame() {
+    clearCanvas();
     updateState(GAME_STATES.PLAYING);
+}
+
+function showMainMenu() {
+    clearCanvas();
+    updateState(GAME_STATES.MAIN_MENU);
 }
 
 function startGameplay() {
     console.log('Game started!');
     startCountdown(() => {
-        // Game logic starts after countdown
-        loop();
+        // Set up line spawning
+        setInterval(() => {
+            if (lines.length < maxLinesOnScreen) {
+                spawnLine();
+            }
+        }, 1000);
+
+        // Start the game loop
+        lastTime = performance.now(); // Initialize timestamp
+        requestAnimationFrame(loop);
     });
 }
 
-// Game Loop Placeholder
-function loop() {
-    if (currentState !== GAME_STATES.PLAYING) return; // Stop loop if not playing
+function gameOver() {
+    currentState = GAME_STATES.END_GAME
 
-    // Your game logic goes here
-    console.log('Game is running...');
-    document.addEventListener('keydown', (e) => {
-        const key = e.key.toLowerCase();
-        keys[key] = true;
-    
-        // Trigger iframe action on spacebar press
-        if (key === ' ' && !iframeCooldown) {
-            activateIframes();
-        }
+    // clear the canvas
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // display a game over message
+    ctx.fillStyle = 'black';
+    ctx.font = '48px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText(round == maxRounds ? 'You Won!' : 'Game Over', canvas.width / 2, canvas.height / 3);
+    ctx.font = '32px Arial';
+    ctx.fillText('Your score: ' + score, canvas.width / 2, canvas.height / 2);
+
+    if (round == maxRounds) {
+        score *= 69;
+        ctx.fillText('69x score multiplier applied! Final Score: ' + score, canvas.width / 2, canvas.height / 1.8);
+    }
+
+    // save high score if applicable
+    if (score > highScore) {
+        highScore = score;
+        localStorage.setItem('highScore', highScore);
+        ctx.fillText('New High Score!', canvas.width / 2, canvas.height / 1.6);
+    }
+
+    // create buttons
+    createButton('Main Menu', canvas.width / 2 - 100, canvas.height / 1.3, () => {
+        // resetGame();
+        showMainMenu();
     });
-    
-    document.addEventListener('keyup', (e) => keys[e.key.toLowerCase()] = false);
+    createButton('Play Again', canvas.width / 2 + 100, canvas.height / 1.3, () => {
+        // resetGame();
+        startGame();
+    });
+}
 
-    function activateIframes() {
-        isInvincible = true;
-        iframeCooldown = true;
-    
-        // Temporarily set invincibility
-        setTimeout(() => {
-            isInvincible = false;
-        }, iframeDuration);
-    
-        // Start cooldown and update cooldown bar
-        let cooldownTimeLeft = iframeCooldownTime / 1000; // Convert to seconds
-        iframeBar.style.transform = 'scaleX(1)'; // Full bar
-        iframeTimer.textContent = cooldownTimeLeft.toFixed(1); // Initial time
-    
-        const cooldownInterval = setInterval(() => {
-            cooldownTimeLeft -= 0.1; // Decrease by 0.1s
-            if (cooldownTimeLeft <= 0) {
-                clearInterval(cooldownInterval);
-                iframeCooldown = false; // Cooldown complete
-                iframeBar.style.transform = 'scaleX(0)'; // Empty bar
-                iframeTimer.textContent = '';
-            } else {
-                iframeBar.style.transform = `scaleX(${cooldownTimeLeft / (iframeCooldownTime / 1000)})`;
-                iframeTimer.textContent = cooldownTimeLeft.toFixed(1);
-            }
-        }, 100);
-    }
-    
-    function startFlashing() {
-        isFlashing = true;
-        let flashDuration = 1000; // Total flashing time in milliseconds
-        let flashInterval = 100; // Flash every 100ms
-        let flashes = flashDuration / flashInterval;
-        let flashCount = 0;
-    
-        const flashIntervalId = setInterval(() => {
-            flashCount++;
-            isFlashing = !isFlashing; // Toggle visibility
-            if (flashCount >= flashes) {
-                clearInterval(flashIntervalId); // Stop flashing after the duration
-                isFlashing = false; // Ensure visibility is restored
-            }
-        }, flashInterval);
-    }
-    
-    let lastTime = 0;
+// helper function to create buttons
+function createButton(text, x, y, onClick) {
+    const button = document.createElement('button');
+    button.textContent = text;
+    button.style.position = 'absolute';
+    button.style.left = `${x}px`;
+    button.style.top = `${y}px`;
+    button.style.padding = '10px 20px';
+    button.style.fontSize = '16px';
+    button.style.cursor = 'pointer';
+    button.style.transform = 'translate(-50%, -50%)'; // center the button
+    document.body.appendChild(button);
 
-    function update(deltaTime) {
-        let moveSpeed = player.speed * deltaTime; // adjust speed by delta time
-    
-        // sprint logic
-        if (keys['shift'] && canSprint && stamina > 0) {
-            moveSpeed *= 2;
-            stamina -= (staminaDepletionRate * deltaTime); // adjust stamina depletion
-            if (stamina <= 0) {
-                stamina = 0;
-                canSprint = false; // prevent sprinting if out of stamina
-            }
+    button.addEventListener('click', () => {
+        button.remove(); // remove button after clicking
+        onClick();
+    });
+}
+
+function activateIframes() {
+    isInvincible = true;
+    iframeCooldown = true;
+
+    // Temporarily set invincibility
+    setTimeout(() => {
+        isInvincible = false;
+    }, iframeDuration);
+
+    // Start cooldown and update cooldown bar
+    let cooldownTimeLeft = iframeCooldownTime / 1000; // Convert to seconds
+    iframeBar.style.transform = 'scaleX(1)'; // Full bar
+    iframeTimer.textContent = cooldownTimeLeft.toFixed(1); // Initial time
+
+    const cooldownInterval = setInterval(() => {
+        cooldownTimeLeft -= 0.1; // Decrease by 0.1s
+        if (cooldownTimeLeft <= 0) {
+            clearInterval(cooldownInterval);
+            iframeCooldown = false; // Cooldown complete
+            iframeBar.style.transform = 'scaleX(0)'; // Empty bar
+            iframeTimer.textContent = '';
         } else {
-            stamina += (staminaRegenRate * deltaTime); // adjust stamina regeneration
-            if (stamina >= 100) {
-                stamina = 100;
-                canSprint = true; // allow sprinting again when stamina is full
-            }
+            iframeBar.style.transform = `scaleX(${cooldownTimeLeft / (iframeCooldownTime / 1000)})`;
+            iframeTimer.textContent = cooldownTimeLeft.toFixed(1);
         }
-    
-        // update stamina bar
-        staminaBar.style.width = `${stamina}%`;
-    
-        if (keys['w'] || keys['arrowup']) player.y -= moveSpeed;
-        if (keys['s'] || keys['arrowdown']) player.y += moveSpeed;
-        if (keys['a'] || keys['arrowleft']) player.x -= moveSpeed;
-        if (keys['d'] || keys['arrowright']) player.x += moveSpeed;
-    
-        // keep the player within bounds
-        player.x = Math.max(player.radius, Math.min(canvas.width - player.radius, player.x));
-        player.y = Math.max(player.radius, Math.min(canvas.height - player.radius, player.y));
-    
-        // update lines
-        for (let i = lines.length - 1; i >= 0; i--) {
-            let line = lines[i];
-            line.x += line.dx * deltaTime; // adjust line movement by delta time
-            line.y += line.dy * deltaTime;
-    
-            // remove lines that leave the screen and update score
-            if ((line.dx > 0 && line.x > canvas.width) || (line.dx < 0 && line.x + line.width < 0) ||
-                (line.dy > 0 && line.y > canvas.height) || (line.dy < 0 && line.y + line.height < 0)) {
-                lines.splice(i, 1);
-                score = score + 10 * round;
-                scoreboardScore.textContent = score;
-            }
-    
-            // collision detection (skipped if invincible)
-            if (!isInvincible &&
-                player.x + player.radius > line.x && player.x - player.radius < line.x + line.width &&
-                player.y + player.radius > line.y && player.y - player.radius < line.y + line.height) {
-                lines.splice(i, 1);
-                lives -= 1;
-                scoreboardLives.textContent = lives;
-                if (lives <= 0) {
-                    gameOver();
-                    return;
-                }
-                startFlashing();
-            }
+    }, 100);
+}
+
+function startFlashing() {
+    isFlashing = true;
+    let flashDuration = 1000; // Total flashing time in milliseconds
+    let flashInterval = 100; // Flash every 100ms
+    let flashes = flashDuration / flashInterval;
+    let flashCount = 0;
+
+    const flashIntervalId = setInterval(() => {
+        flashCount++;
+        isFlashing = !isFlashing; // Toggle visibility
+        if (flashCount >= flashes) {
+            clearInterval(flashIntervalId); // Stop flashing after the duration
+            isFlashing = false; // Ensure visibility is restored
         }
-    
-        // spawn new lines if needed
-        while (lines.length < maxLinesOnScreen) {
-            linesLeft -= 1;
-            scoreboardLines.textContent = linesLeft;
-            spawnLine();
+    }, flashInterval);
+}
+
+let lastTime = 0;
+
+function update(deltaTime) {
+    let moveSpeed = player.speed * deltaTime; // adjust speed by delta time
+
+    // sprint logic
+    if (keys['shift'] && canSprint && stamina > 0) {
+        moveSpeed *= 2;
+        stamina -= (staminaDepletionRate * deltaTime); // adjust stamina depletion
+        if (stamina <= 0) {
+            stamina = 0;
+            canSprint = false; // prevent sprinting if out of stamina
         }
-    
-        // handle round progression
-        if (linesLeft == 0 && round <= maxRounds) {
-            if (round == maxRounds) {
+    } else {
+        stamina += (staminaRegenRate * deltaTime); // adjust stamina regeneration
+        if (stamina >= 100) {
+            stamina = 100;
+            canSprint = true; // allow sprinting again when stamina is full
+        }
+    }
+
+    // update stamina bar
+    staminaBar.style.width = `${stamina}%`;
+
+    if (keys['w'] || keys['arrowup']) player.y -= moveSpeed;
+    if (keys['s'] || keys['arrowdown']) player.y += moveSpeed;
+    if (keys['a'] || keys['arrowleft']) player.x -= moveSpeed;
+    if (keys['d'] || keys['arrowright']) player.x += moveSpeed;
+
+    // keep the player within bounds
+    player.x = Math.max(player.radius, Math.min(canvas.width - player.radius, player.x));
+    player.y = Math.max(player.radius, Math.min(canvas.height - player.radius, player.y));
+
+    // update lines
+    for (let i = lines.length - 1; i >= 0; i--) {
+        let line = lines[i];
+        line.x += line.dx * deltaTime; // adjust line movement by delta time
+        line.y += line.dy * deltaTime;
+
+        // remove lines that leave the screen and update score
+        if ((line.dx > 0 && line.x > canvas.width) || (line.dx < 0 && line.x + line.width < 0) ||
+            (line.dy > 0 && line.y > canvas.height) || (line.dy < 0 && line.y + line.height < 0)) {
+            lines.splice(i, 1);
+            score = score + 10 * round;
+            scoreboardScore.textContent = score;
+        }
+
+        // collision detection (skipped if invincible)
+        if (!isInvincible &&
+            player.x + player.radius > line.x && player.x - player.radius < line.x + line.width &&
+            player.y + player.radius > line.y && player.y - player.radius < line.y + line.height) {
+            lines.splice(i, 1);
+            lives -= 1;
+            scoreboardLives.textContent = lives;
+            if (lives <= 0) {
                 gameOver();
+                return;
             }
-    
-            round++;
-            linesPerRound = linesPerRound * 2;
-            linesLeft = linesPerRound;
-            lineSpeedMultiplier += 0.05;
-            scoreboardRound.textContent = round;
+            startFlashing();
         }
     }
-    
-    function draw() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        canvas.style.borderColor = roundColor[round];
-    
-        // Draw player with a special effect during iframes or flashing
-        if (!isFlashing || Math.floor(performance.now() / 100) % 2 === 0) {
-            ctx.fillStyle = roundColor[round];
-            ctx.globalAlpha = isInvincible ? 0.3 : 1.0;
-            ctx.beginPath();
-            ctx.arc(player.x, player.y, player.radius, 0, Math.PI * 2);
-            ctx.fill();
+    // spawn new lines if needed
+    while (lines.length < maxLinesOnScreen) {
+        linesLeft -= 1;
+        scoreboardLines.textContent = linesLeft;
+        spawnLine();
+    }
+
+    // handle round progression
+    if (linesLeft == 0 && round <= maxRounds) {
+        if (round == maxRounds) {
+            gameOver();
         }
 
-        ctx.globalAlpha = 1.0;
-    
+        round++;
+        linesPerRound = linesPerRound * 2;
+        linesLeft = linesPerRound;
+        lineSpeedMultiplier += 0.05;
+        scoreboardRound.textContent = round;
+    }
+}
+
+function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    canvas.style.borderColor = roundColor[round];
+
+    // Draw player with a special effect during iframes or flashing
+    if (!isFlashing || Math.floor(performance.now() / 100) % 2 === 0) {
         ctx.fillStyle = roundColor[round];
-        for (let line of lines) {
-            ctx.fillRect(line.x, line.y, line.width, line.height);
-        }
+        ctx.globalAlpha = isInvincible ? 0.3 : 1.0;
+        ctx.beginPath();
+        ctx.arc(player.x, player.y, player.radius, 0, Math.PI * 2);
+        ctx.fill();
     }
-    
-    function spawnLine() {
-        const side = Math.floor(Math.random() * 4); // 0 = top, 1 = right, 2 = bottom, 3 = left
-        const speed = (Math.random() * 50 + 150) * lineSpeedMultiplier;
-        let line = { x: 0, y: 0, width: 0, height: 0, dx: 0, dy: 0 };
-    
-        switch (side) {
-            case 0: // Top
-                var width = Math.floor(Math.random() * canvas.width);
-                var height = 20;
-                var x = Math.floor(Math.random() * canvas.width);
-                var y = 0;
-    
-                line = { x: x, y: y, width: width, height: height, dx: 0, dy: speed };
-                break;
-            case 1: // Right
-                var width = 20;
-                var height = Math.floor(Math.random() * canvas.width);
-                var x = canvas.width;
-                var y = Math.floor(Math.random() * canvas.width);
-    
-                line = { x: x, y: y, width: width, height: height, dx: -speed, dy: 0 };
-                break;
-            case 2: // Bottom
-                var width = Math.floor(Math.random() * canvas.width);
-                var height = 20;
-                var x = Math.floor(Math.random() * canvas.width);
-                var y = canvas.height;
-    
-                line = { x: x, y: y, width: width, height: height, dx: 0, dy: -speed };
-                break;
-            case 3: // Left
-                var width = 20;
-                var height = Math.floor(Math.random() * canvas.width);
-                var x = 0;
-                var y = Math.floor(Math.random() * canvas.width);
-    
-                line = { x: x, y: y, width: width, height: height, dx: speed, dy: 0 };
-                break;
-        }
-    
-        lines.push(line);
-    }
-    
-    function gameOver() {
-        if (score > highScore) {
-            highScore = score;
-            localStorage.setItem('highScore', highScore);
-        }
-        alert('Game Over! Your score: ' + score);
-        resetGame();
-    }
-    
-    function resetGame() {
-        location.reload();
-    }
-    
-    function loop(timestamp) {
-        let deltaTime = (timestamp - lastTime) / 1000; // time difference in seconds
-        lastTime = timestamp;
-    
-        update(deltaTime);
-        draw();
-    
-        requestAnimationFrame(loop);
-    }
-    
-    setInterval(() => {
-        if (lines.length < 3) {
-            spawnLine();
-        }
-    }, 1000);
 
-    // loop();
+    ctx.globalAlpha = 1.0;
 
-    requestAnimationFrame(loop);
+    ctx.fillStyle = roundColor[round];
+    for (let line of lines) {
+        ctx.fillRect(line.x, line.y, line.width, line.height);
+    }
+}
+
+function spawnLine() {
+    const side = Math.floor(Math.random() * 4); // 0 = top, 1 = right, 2 = bottom, 3 = left
+    const speed = (Math.random() * 50 + 150) * lineSpeedMultiplier;
+    let line = { x: 0, y: 0, width: 0, height: 0, dx: 0, dy: 0 };
+
+    switch (side) {
+        case 0: // Top
+            var width = Math.floor(Math.random() * canvas.width);
+            var height = 20;
+            var x = Math.floor(Math.random() * canvas.width);
+            var y = 0;
+
+            line = { x: x, y: y, width: width, height: height, dx: 0, dy: speed };
+            break;
+        case 1: // Right
+            var width = 20;
+            var height = Math.floor(Math.random() * canvas.width);
+            var x = canvas.width;
+            var y = Math.floor(Math.random() * canvas.width);
+
+            line = { x: x, y: y, width: width, height: height, dx: -speed, dy: 0 };
+            break;
+        case 2: // Bottom
+            var width = Math.floor(Math.random() * canvas.width);
+            var height = 20;
+            var x = Math.floor(Math.random() * canvas.width);
+            var y = canvas.height;
+
+            line = { x: x, y: y, width: width, height: height, dx: 0, dy: -speed };
+            break;
+        case 3: // Left
+            var width = 20;
+            var height = Math.floor(Math.random() * canvas.width);
+            var x = 0;
+            var y = Math.floor(Math.random() * canvas.width);
+
+            line = { x: x, y: y, width: width, height: height, dx: speed, dy: 0 };
+            break;
+    }
+
+    lines.push(line);
+}
+
+
+function loop(timestamp) {
+    if (currentState !== GAME_STATES.PLAYING) return; // stop if not playing
+
+    let deltaTime = (timestamp - lastTime) / 1000; // calculate time difference
+    lastTime = timestamp;
+
+    update(deltaTime); // update game logic
+    draw(); // draw on canvas
+
+    requestAnimationFrame(loop); // continue the loop
 }
 
 // Initialize the app
 init();
-
-
-
-
-
