@@ -226,6 +226,16 @@ button {
     gap: 4px;
 }
 
+.esc-container {
+    border: 4px solid white;
+    padding-left: 2rem;
+    padding-right: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+}
+
 .move-letter {
     font-size: x-large;
 }
