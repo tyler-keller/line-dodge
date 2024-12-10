@@ -32,7 +32,7 @@ let lines = [];
 let score = 0;
 let lives = 3;
 let round = 1;
-let maxRounds = 6; // +1 than playable rounds for end game logic
+let maxRounds = 6; // +1 than playable rounds for end game logic; hacky ik... ...
 let linesPerRound = 20;
 let linesLeft = linesPerRound;
 let lineSpeedMultiplier = 1;
@@ -88,17 +88,44 @@ function updateState(newState) {
     }
 }
 
+
+// Countdown Function
+function startCountdown(callback) {
+    let countdown = 3; // Start from 3
+    ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear canvas
+    ctx.fillStyle = 'white'; // Set text color
+    ctx.font = '128px "Pixelify Sans"'; // Set font and size
+    ctx.textAlign = 'center'; // Center align text
+    ctx.textBaseline = 'middle'; // Middle align text
+
+    function drawCountdown() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear canvas
+        ctx.fillText(countdown, canvas.width / 2, canvas.height / 2); // Draw countdown number
+
+        if (countdown > 0) {
+            countdown--; // Decrement countdown
+            setTimeout(drawCountdown, 1000); // Call again after 1 second
+        } else {
+            ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear canvas after countdown
+            callback(); // Start the game
+        }
+    }
+
+    drawCountdown();
+}
+
+
 // Start Game Function
 function startGame() {
     updateState(GAME_STATES.PLAYING);
 }
 
-// Gameplay Logic (Placeholder)
 function startGameplay() {
     console.log('Game started!');
-    // Initialize gameplay elements here, e.g., start animations, reset scores
-    // Call the game loop or whatever logic is needed to start playing
-    loop();
+    startCountdown(() => {
+        // Game logic starts after countdown
+        loop();
+    });
 }
 
 // Game Loop Placeholder
@@ -302,7 +329,7 @@ function loop() {
             case 3: // Left
                 var width = 20;
                 var height = Math.floor(Math.random() * canvas.width);
-                var x = canvas.width;
+                var x = 0;
                 var y = Math.floor(Math.random() * canvas.width);
     
                 line = { x: x, y: y, width: width, height: height, dx: speed, dy: 0 };
