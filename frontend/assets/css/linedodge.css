@@ -16,6 +16,11 @@ canvas {
     border: 4px white solid;
 }
 
+#main-menu-header {
+    padding-top: 7rem;
+    padding-bottom: 5rem;
+}
+
 header {
     display: flex;
     flex-direction: column;
