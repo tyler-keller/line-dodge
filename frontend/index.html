@@ -31,8 +31,8 @@
             <header>
                 <h1>LINE DODGE</h1>
             </header>
-            <div id="home-button">
-                <button><span><</span></button>
+            <div id="pause-button">
+                <button id="pause-display">&#9208;</button>
             </div>
             <div id="scoreboard">
                 <div>High Score: <span id="current-highscore" class="integer-font">0</span></div>
@@ -60,7 +60,11 @@
             </div>
         </div>
         <div id="pause-overlay">
-            paused. press escape to resume.
+            <div class="pause-overlay-content">
+                <p>Paused</p>
+                <button>MAIN MENU</button>
+                <button id="open-btn2">HOW TO PLAY</button>
+            </div>
         </div>
     </main>
     <div id="how-to-play" class="htp">

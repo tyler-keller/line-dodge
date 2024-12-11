@@ -145,6 +145,7 @@ button {
     padding: 1rem;
     cursor: pointer;
     transition: 0.5s;
+    outline: none;
 }
 
 button:hover{
@@ -164,6 +165,7 @@ button:hover{
     height: 110vh;
     overflow: auto;
     background: rgba(0,0,0,0.8); 
+    z-index: 50;
 }
 
 .htp-content{
@@ -173,6 +175,7 @@ button:hover{
     border: 4px solid white;
     width: 60%;
     height: 60%;
+    z-index: 50;
 }
 
 .close {
@@ -253,13 +256,14 @@ button:hover{
     gap: 4px;
 }
 
-#home-button {
+#pause-button {
     position: absolute;
     top: 3rem;
     left: 3rem;
+    z-index: 90;
 }
 
-#home-button button {
+#pause-button button {
     font-family: 'Pixelify Sans', sans-serif;
     background-color: black;
     border: 4px solid white;
@@ -272,9 +276,10 @@ button:hover{
     justify-content: center;
     align-items: center;
     transition: 0.5s;
+    outline: none;
 }
 
-#home-button button:hover{
+#pause-button button:hover{
     background-color: white ;
     animation: Animate 0.8s steps(8) forwards;
     color:black;
@@ -316,6 +321,7 @@ button:hover{
     height: 5rem;
     cursor: pointer;
     transition: 0.5s;
+    outline: none;
 }
 
 #end-game-content button:hover{
@@ -362,6 +368,7 @@ button:hover{
     padding: 1rem 2rem;
     cursor: pointer;
     transition: 0.5s;
+    outline: none;
 }
 
 #power-up-options button:hover {
@@ -373,12 +380,22 @@ button:hover{
 #pause-overlay {
     display: none; 
     position: absolute; 
+    justify-content: center;
+    align-items: center;
     top: 0; left: 0; 
     width: 100%; 
     height: 100%; 
-    background: rgba(0, 0, 0, 0.8); 
+    background-color: rgba(0, 0, 0, 0.8); 
     color: white; 
     font-size: 48px; 
-    text-align: center; 
-    line-height: 100vh; 
+    text-align: center;
+    z-index: 10;
+}
+.pause-overlay-content {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+.pause-overlay-content p {
+    margin: 0;
 }

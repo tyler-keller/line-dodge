@@ -48,7 +48,8 @@ const scoreboardLives = document.getElementById('current-lives');
 const staminaBar = document.getElementById('stamina-fill');
 const iframeBar = document.getElementById('iframe-fill');
 const iframeTimer = document.getElementById('iframe-timer');
-const homeBtn = document.getElementById("home-button");
+const pauseBtn = document.getElementById("pause-button");
+const pauseDisplay =document.getElementById("pause-display")
 const powerUpMenu = document.getElementById('power-up-menu');
 const powerUpOptions = document.getElementById('power-up-options');
 
@@ -90,9 +91,16 @@ let staminaDepletionRate = 66; // Per second when sprinting
 const staminaRegenRate = 33; // Per second when not sprinting
 let canSprint = true;
 
-//home button
-homeBtn.onclick = function() {
-    location.reload();
+//Pause button
+pauseBtn.onclick = function() {
+    if (currentState === GAME_STATES.PLAYING) {
+        updateState(GAME_STATES.PAUSED);
+        pauseDisplay.innerHTML = "&#9654;"
+
+    } else if (currentState === GAME_STATES.PAUSED) {
+        updateState(GAME_STATES.PLAYING);
+        pauseDisplay.innerHTML = "&#9208;"
+    }
 }
 
 function init() {
@@ -172,7 +180,7 @@ function updateState(newState) {
         case GAME_STATES.PAUSED:
             console.log('Game paused!');
             mainMenu.style.display = 'none';
-            pauseOverlay.style.display = 'block';
+            pauseOverlay.style.display = 'flex';
             pauseTime = performance.now(); // record when the game was paused
             break;
     }
