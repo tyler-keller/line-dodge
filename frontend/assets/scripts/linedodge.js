@@ -7,6 +7,29 @@ const GAME_STATES = {
     END_ROUND: 'END_ROUND',
 };
 
+// power ups
+const POWER_UPS = [
+    {
+        name: 'Extra Life',
+        effect: (updater) => {
+            updater.updateLives(lives + 1); // Increment lives
+        },
+    },
+    //{
+    //    name: 'Increased Stamina',
+    //    effect: (updater) => {
+    //        updater.updateStamina(stamina * 100); // Increase stamina
+    //    },
+    //},
+    {
+        name: 'Speed Boost',
+        effect: (updater) => {
+            updater.updateSpeed(player.speed * 1.2); // Increase player speed
+        },
+    },
+];
+
+
 let currentState = GAME_STATES.MAIN_MENU; // Start at main menu
 
 // DOM Elements
@@ -26,6 +49,8 @@ const staminaBar = document.getElementById('stamina-fill');
 const iframeBar = document.getElementById('iframe-fill');
 const iframeTimer = document.getElementById('iframe-timer');
 const homeBtn = document.getElementById("home-button");
+const powerUpMenu = document.getElementById('power-up-menu');
+const powerUpOptions = document.getElementById('power-up-options');
 
 //Gameplay Variables
 let highScore = localStorage.getItem('highScore') ? parseInt(localStorage.getItem('highScore')) : 0;
@@ -361,16 +386,13 @@ function update(deltaTime) {
 
     // handle round progression
     if (linesLeft == 0 && round <= maxRounds) {
-        if (round == maxRounds) {
+        if (round === maxRounds) {
             gameOver();
+            return;
         }
-
-        round++;
-        linesPerRound = linesPerRound * 2;
-        // linesPerRound = linesPerRound;
-        linesLeft = linesPerRound;
-        lineSpeedMultiplier += 0.05;
-        scoreboardRound.textContent = round;
+    
+        // Trigger endRound to allow selecting power-ups
+        endRound();
     }
 }
 
@@ -450,6 +472,65 @@ function loop(timestamp) {
     draw(); // draw on canvas
 
     requestAnimationFrame(loop); // continue the loop
+}
+
+function endRound() {
+    currentState = GAME_STATES.END_ROUND;
+    console.log("End round triggered, displaying power-up options.");
+    
+    powerUpOptions.innerHTML = ''; // Clear previous options
+
+    POWER_UPS.forEach((powerUp, index) => {
+        const button = document.createElement('button');
+        button.textContent = powerUp.name;
+        console.log(`Creating button for power-up: ${powerUp.name}`);
+        button.onclick = () => {
+            console.log(`Power-up selected: ${powerUp.name}`);
+            applyPowerUp(index);
+            powerUpMenu.classList.add('hidden');
+            startNewRound();
+        };
+        powerUpOptions.appendChild(button);
+    });
+
+    powerUpMenu.classList.remove('hidden');
+    console.log("Power-up menu should now be visible.");
+}
+
+function applyPowerUp(index) {
+    const selectedPowerUp = POWER_UPS[index];
+    if (selectedPowerUp && selectedPowerUp.effect) {
+        // Apply the effect, passing in references to the actual variables
+        selectedPowerUp.effect({
+            updateLives: (value) => { lives = value; },
+            //updateStamina: (value) => { stamina = value; },
+            updateSpeed: (value) => { player.speed = value; },
+        });
+
+        // Update UI elements after applying the power-up
+        scoreboardLives.textContent = lives;
+        //staminaBar.style.width = `${stamina}%`;
+
+        console.log(`Power-up applied: ${selectedPowerUp.name}`);
+        console.log(`Lives: ${lives}, Stamina: ${stamina}, Speed: ${player.speed}`);
+    }
+}
+
+
+function startNewRound() {
+    currentState = GAME_STATES.PLAYING;
+
+    // Reset round-specific variables
+    round += 1; // Increment round
+    linesPerRound = linesPerRound * 2;
+    linesLeft = linesPerRound;
+    lineSpeedMultiplier += 0.05;
+
+    scoreboardRound.textContent = round;
+
+    // Restart gameplay
+    requestAnimationFrame(loop);
+    console.log(`Starting Round ${round}`);
 }
 
 init();

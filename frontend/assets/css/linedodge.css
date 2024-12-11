@@ -316,3 +316,17 @@ button {
 .integer-font {
     font-family: 'Aldrich', sans-serif;
 }
+
+#power-up-menu {
+    color: white;
+}
+
+#power-up-menu.hidden {
+    display: none;
+}
+
+#power-up-options button {
+    margin: 10px;
+    padding: 10px;
+    font-size: 16px;
+}
