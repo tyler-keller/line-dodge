@@ -184,7 +184,7 @@ function startCountdown(callback) {
     let countdown = 3; // Start from 3
     ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear canvas
     ctx.fillStyle = 'white'; // Set text color
-    ctx.font = '128px "Aldrich"'; // Set font and size
+    ctx.font = '128px "Pixelify Sans"'; // Set font and size
     ctx.textAlign = 'center'; // Center align text
     ctx.textBaseline = 'middle'; // Middle align text
 
@@ -403,7 +403,7 @@ function draw() {
 
     // Draw player with a special effect during iframes or flashing
     if (!isFlashing || Math.floor(performance.now() / 100) % 2 === 0) {
-        ctx.fillStyle = 'lime';
+        ctx.fillStyle = roundColor[round];
         ctx.globalAlpha = isInvincible ? 0.3 : 1.0;
         ctx.beginPath();
         ctx.arc(player.x, player.y, player.radius, 0, Math.PI * 2);
