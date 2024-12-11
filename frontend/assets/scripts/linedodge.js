@@ -15,12 +15,12 @@ const POWER_UPS = [
             updater.updateLives(lives + 1); // Increment lives
         },
     },
-    //{
-    //    name: 'Increased Stamina',
-    //    effect: (updater) => {
-    //        updater.updateStamina(stamina * 100); // Increase stamina
-    //    },
-    //},
+    {
+        name: 'Increased Stamina',
+        effect: (updater) => {
+            updater.updateStamina(staminaDepletionRate - 10); // Increase stamina
+        },
+    },
     {
         name: 'Speed Boost',
         effect: (updater) => {
@@ -85,8 +85,8 @@ let isFlashing = false; // Tracks if the red dot is flashing
 let pauseTime = 0; // time when the game was paused
 
 // Stamina properties
-let stamina = 100; // Max stamina
-const staminaDepletionRate = 66; // Per second when sprinting
+let stamina = 66; // Max stamina
+let staminaDepletionRate = 66; // Per second when sprinting
 const staminaRegenRate = 33; // Per second when not sprinting
 let canSprint = true;
 
@@ -503,16 +503,15 @@ function applyPowerUp(index) {
         // Apply the effect, passing in references to the actual variables
         selectedPowerUp.effect({
             updateLives: (value) => { lives = value; },
-            //updateStamina: (value) => { stamina = value; },
+            updateStamina: (value) => { staminaDepletionRate = value; },
             updateSpeed: (value) => { player.speed = value; },
         });
 
         // Update UI elements after applying the power-up
         scoreboardLives.textContent = lives;
-        //staminaBar.style.width = `${stamina}%`;
 
         console.log(`Power-up applied: ${selectedPowerUp.name}`);
-        console.log(`Lives: ${lives}, Stamina: ${stamina}, Speed: ${player.speed}`);
+        console.log(`Lives: ${lives}, Stamina Depletion: ${staminaDepletionRate}, Speed: ${player.speed}`);
     }
 }
 
