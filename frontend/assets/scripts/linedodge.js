@@ -10,19 +10,19 @@ const GAME_STATES = {
 // power ups
 const POWER_UPS = [
     {
-        name: 'Extra Life',
+        name: 'EXTRA LIFE',
         effect: (updater) => {
             updater.updateLives(lives + 1); // Increment lives
         },
     },
     {
-        name: 'Increased Stamina',
+        name: 'INCREASED STAMINA',
         effect: (updater) => {
             updater.updateStamina(staminaDepletionRate - 10); // Increase stamina
         },
     },
     {
-        name: 'Speed Boost',
+        name: 'SPEED BOOST',
         effect: (updater) => {
             updater.updateSpeed(player.speed * 1.2); // Increase player speed
         },
