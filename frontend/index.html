@@ -41,13 +41,20 @@
                 <div>Score: <span id="current-score" class="integer-font">0</span></div>
                 <div>Lives: <span id="current-lives" class="integer-font">3</span></div>
             </div>
-            <div id="stamina-bar">
-                <div id="stamina-fill" style="width: 100%;"></div>
+            <div class="stamina">
+                <span>Stamina:</span>
+                <div id="stamina-bar">
+                    <div id="stamina-fill" style="width: 100%;"></div>
+                </div>
             </div>
-            <div id="iframe-bar-container">
-                <div id="iframe-fill"></div>
-                <span id="iframe-timer"></span>
+            <div class="invincibility">
+                <span>Invincibility:</span>
+                <div id="iframe-bar-container">
+                    <div id="iframe-fill"></div>
+                    <span id="iframe-timer">Ready</span>
+                </div>
             </div>
+
             <canvas id="gameCanvas" width="600" height="600"></canvas>
         </div>
         <div id="end-game-modal" style="display: none;">

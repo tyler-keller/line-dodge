@@ -334,7 +334,7 @@ function activateIframes() {
             clearInterval(cooldownInterval);
             iframeCooldown = false; // Cooldown complete
             iframeBar.style.transform = 'scaleX(0)'; // Empty bar
-            iframeTimer.textContent = '';
+            iframeTimer.textContent = 'Ready';
         } else {
             iframeBar.style.transform = `scaleX(${cooldownTimeLeft / (iframeCooldownTime / 1000)})`;
             iframeTimer.textContent = cooldownTimeLeft.toFixed(1);

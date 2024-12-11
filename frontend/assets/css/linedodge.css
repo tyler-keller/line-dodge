@@ -44,25 +44,33 @@ header h1 {
     justify-content: center;
     margin-bottom: 1em;
 }
-#stamina-bar {
+.stamina {
     position: absolute;
+    display: flex;
+    flex-direction: row;
     bottom: 5rem;
-    left: 20px;
-    width: 200px;
+    left: 1.25rem;
+    gap: 0.5rem;
+}
+#stamina-bar {
+    width: 12.50rem;
     height: 1.5em;
     background-color: #555;
 }
 #stamina-fill {
     height: 100%;
-    background-color: green;
+    background-color: white;
 }
-#iframe-bar-container {
+
+.invincibility {
     position: absolute;
     bottom: 7rem;
-    left: 20px;
-    width: 200px;
-    height: 1.5em;
-    background-color: lightgray;
+    left: 1.25rem;
+    display: flex;
+    flex-direction: row;
+    gap: 1.5rem;
+}
+#iframe-bar-container {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -72,10 +80,11 @@ header h1 {
 #iframe-fill {
     height: 100%;
     width: 100%;
-    background-color: blue;
+    background-color: white;
     transform: scaleX(1);
     transform-origin: left;
     transition: transform 0.1s linear;
+    display: none;
 }
 
 #iframe-timer {
