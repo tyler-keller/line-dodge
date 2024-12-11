@@ -61,11 +61,11 @@ collisionSound.volume = 0.5;
 const bgMusic = new Audio('assets/Sounds/background.wav');
 bgMusic.preload = 'auto';
 bgMusic.loop = true; // Enable looping
-bgMusic.volume = 0.1; // Set a subtle volume for background music
+bgMusic.volume = 0.075; // Set a subtle volume for background music
 
-// const clickSound = new Audio('assets/Sounds/click.wav');
-// clickSound.preload = 'auto';
-// clickSound.volume = 0.4;
+const gameOverSound = new Audio('assets/Sounds/gameOver.wav');
+gameOverSound.preload = 'auto';
+gameOverSound.volume = 0.5;
 
 
 //Gameplay Variables
@@ -253,7 +253,9 @@ function startGameplay() {
 function gameOver() {
     currentState = GAME_STATES.END_GAME;
     lastTime = 0;
-
+    bgMusic.pause;
+    bgMusic.currentTime = 0;
+    gameOverSound.play();
     // Show modal
     const endGameModal = document.getElementById('end-game-modal');
     const endGameMessage = document.getElementById('end-game-message');
