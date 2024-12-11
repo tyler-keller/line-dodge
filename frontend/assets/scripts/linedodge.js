@@ -59,17 +59,11 @@ console.log(`LOG: highscore from localstorage pull: ${highScore}`)
 scoreboardHighScore.textContent = highScore;
 menuHighScore.textContent = highScore;
 
-let player = { x: canvas.width / 2, y: canvas.height / 2, radius: 8, speed: 150 };
 let keys = {};
-let lines = [];
-let score = 0;
-let lives = 3;
-let round = 1;
-let maxRounds = 6; // +1 than playable rounds for end game logic; hacky ik... ...
-let linesPerRound = 5;
-let linesLeft = linesPerRound;
-let lineSpeedMultiplier = 1;
+let player = null, lines = null, score = null, lives = null, round = null, linesPerRound = null, linesLeft = null, lineSpeedMultiplier = null, incrLinesPerRound = null;
+let maxRounds = 5; // +1 than playable rounds for end game logic; hacky ik... ...
 let maxLinesOnScreen = 5;
+
 let isInvincible = false; // Tracks if the player has iframes
 let iframeCooldown = false; // Tracks if the ability is on cooldown
 const iframeDuration = 750; // Duration of iframes in milliseconds
@@ -80,7 +74,6 @@ let roundColor = {
     3: 'orange',
     4: 'orangered',
     5: 'violet',
-    6: 'violet',
 }
 let isFlashing = false; // Tracks if the red dot is flashing
 let pauseTime = 0; // time when the game was paused
@@ -138,9 +131,10 @@ function resetGame() {
     player = { x: canvas.width / 2, y: canvas.height / 2, radius: 8, speed: 150 };
     lines = [];
     score = 0;
-    lives = 3;
+    lives = 5;
     round = 1;
     linesPerRound = 20;
+    incrLinesPerRound = 20;
     linesLeft = linesPerRound;
     lineSpeedMultiplier = 1;
 
@@ -183,6 +177,11 @@ function updateState(newState) {
             pauseOverlay.style.display = 'flex';
             pauseTime = performance.now(); // record when the game was paused
             break;
+
+        case GAME_STATES.END_ROUND:
+            console.log('Game paused!');
+            pauseTime = performance.now(); // record when the game was paused
+            break;
     }
 }
 
@@ -192,7 +191,7 @@ function startCountdown(callback) {
     let countdown = 3; // Start from 3
     ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear canvas
     ctx.fillStyle = 'white'; // Set text color
-    ctx.font = '128px "Pixelify Sans"'; // Set font and size
+    ctx.font = '128px "Aldrich"'; // Set font and size
     ctx.textAlign = 'center'; // Center align text
     ctx.textBaseline = 'middle'; // Middle align text
 
@@ -248,12 +247,13 @@ function gameOver() {
     const playAgainButton = document.getElementById('play-again-button');
 
     // Set modal content
-    endGameMessage.textContent = round === maxRounds ? 'YOU WON!' : 'GAME OVER';
+    const isGameWon = round === maxRounds && linesLeft === 0
+    endGameMessage.textContent = (isGameWon) ? 'YOU WON!' : 'GAME OVER';
     endGameMessage.style.fontSize = "xx-large"
     endGameScore.textContent = `Your score: ${score}`;
-    if (round === maxRounds) {
-        score *= 69;
-        endGameScore.textContent += ` (69x multiplier applied! Final Score: ${score})`;
+    if (isGameWon) {
+        score *= lives;
+        endGameScore.textContent += `\nExtra lives multiplier!\nFinal Score: ${score})`;
     }
 
     if (score > highScore) {
@@ -367,7 +367,11 @@ function update(deltaTime) {
         if ((line.dx > 0 && line.x > canvas.width) || (line.dx < 0 && line.x + line.width < 0) ||
             (line.dy > 0 && line.y > canvas.height) || (line.dy < 0 && line.y + line.height < 0)) {
             lines.splice(i, 1);
+
+            linesLeft -= 1;
             score = score + 10 * round;
+
+            scoreboardLines.textContent = linesLeft;
             scoreboardScore.textContent = score;
         }
 
@@ -388,13 +392,11 @@ function update(deltaTime) {
 
     // spawn new lines if needed
     while (lines.length < maxLinesOnScreen) {
-        linesLeft -= 1;
-        scoreboardLines.textContent = linesLeft;
         spawnLine();
     }
 
     // handle round progression
-    if (linesLeft == 0 && round <= maxRounds) {
+    if (linesLeft === 0) {
         if (round === maxRounds) {
             gameOver();
             return;
@@ -427,14 +429,23 @@ function draw() {
     }
 }
 
+function normalizedSigmoid(x, k = 5, x0 = 0, xmin = 0.5) {
+    // checkout desmos for function shape. acts as a ramp so that start of the rounds start at ~50-75% normal speed.
+    // xmin is when to cap the function at 1. so at xmin=.5, speed hits max potential halfway through the round
+    const output = 1 + Math.exp(-k * (xmin - x0)) / (1 + Math.exp(-k * (x - x0)));
+    return Math.min(1, output);
+}
+
 function spawnLine() {
     const side = Math.floor(Math.random() * 4); // 0 = top, 1 = right, 2 = bottom, 3 = left
-    const speed = (Math.random() * 50 + 150) * lineSpeedMultiplier;
+    const speedRamp = normalizedSigmoid(1 - (linesLeft / linesPerRound)); 
+    const speed = (Math.random() * 25 + 125) * lineSpeedMultiplier * speedRamp;
+    const length = Math.floor(Math.random() * (canvas.width - 128) + 64);
     let line = { x: 0, y: 0, width: 0, height: 0, dx: 0, dy: 0 };
 
     switch (side) {
         case 0: // Top
-            var width = Math.floor(Math.random() * canvas.width);
+            var width = length;
             var height = 20;
             var x = Math.floor(Math.random() * canvas.width);
             var y = 0;
@@ -443,14 +454,14 @@ function spawnLine() {
             break;
         case 1: // Right
             var width = 20;
-            var height = Math.floor(Math.random() * canvas.width);
+            var height = length;
             var x = canvas.width;
             var y = Math.floor(Math.random() * canvas.width);
 
             line = { x: x, y: y, width: width, height: height, dx: -speed, dy: 0 };
             break;
         case 2: // Bottom
-            var width = Math.floor(Math.random() * canvas.width);
+            var width = length;
             var height = 20;
             var x = Math.floor(Math.random() * canvas.width);
             var y = canvas.height;
@@ -459,7 +470,7 @@ function spawnLine() {
             break;
         case 3: // Left
             var width = 20;
-            var height = Math.floor(Math.random() * canvas.width);
+            var height = length;
             var x = 0;
             var y = Math.floor(Math.random() * canvas.width);
 
@@ -484,7 +495,8 @@ function loop(timestamp) {
 }
 
 function endRound() {
-    currentState = GAME_STATES.END_ROUND;
+    lines = [];
+    updateState(GAME_STATES.END_ROUND);
     console.log("End round triggered, displaying power-up options.");
     
     powerUpOptions.innerHTML = ''; // Clear previous options
@@ -526,18 +538,17 @@ function applyPowerUp(index) {
 
 
 function startNewRound() {
-    currentState = GAME_STATES.PLAYING;
-
     // Reset round-specific variables
     round += 1; // Increment round
-    linesPerRound = linesPerRound * 2;
+    linesPerRound += incrLinesPerRound;
     linesLeft = linesPerRound;
-    lineSpeedMultiplier += 0.05;
+    lineSpeedMultiplier += 0.15;
 
     scoreboardRound.textContent = round;
 
     // Restart gameplay
-    requestAnimationFrame(loop);
+    // requestAnimationFrame(loop);
+    updateState(GAME_STATES.PLAYING);
     console.log(`Starting Round ${round}`);
 }
 
