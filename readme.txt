@@ -1,17 +1,3 @@
-# 🎮 **LineDodge** 🚀
-
-✨ **Can you survive the ultimate challenge?**  
-Test your skills, dodge the lines, and set a new high score!
-
----
-
-## 🚀 **[PLAY GAME HERE](https://linedodge.pro)** 🕹️
-
-> Click the link above to start playing instantly!  
-> No downloads, no waiting — just pure adrenaline.
-
----
-
 # Project Justification:
 
 linedogde.pro is a game in which the player controls a dot and has to avoid lines.
