@@ -24,7 +24,7 @@ const POWER_UPS = [
     {
         name: 'SPEED BOOST',
         effect: (updater) => {
-            updater.updateSpeed(player.speed * 1.2); // Increase player speed
+            updater.updateSpeed(player.speed * 1.1); // Increase player speed
         },
     },
 ];
