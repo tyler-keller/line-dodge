@@ -34,6 +34,7 @@ let currentState = GAME_STATES.MAIN_MENU; // Start at main menu
 
 // DOM Elements
 const mainMenu = document.getElementById('main-menu');
+const howToPlay = document.getElementById("how-to-play");
 const gameContainer = document.getElementById('game');
 const canvas = document.getElementById('gameCanvas');
 const pauseOverlay = document.getElementById('pause-overlay');
@@ -156,7 +157,7 @@ function resetGame() {
     player = { x: canvas.width / 2, y: canvas.height / 2, radius: 8, speed: 150 };
     lines = [];
     score = 0;
-    lives = 5;
+    lives = 3;
     round = 1;
     linesPerRound = 20;
     incrLinesPerRound = 20;
@@ -180,12 +181,14 @@ function updateState(newState) {
             mainMenu.style.display = 'block';
             gameContainer.style.display = 'none';
             pauseOverlay.style.display = 'none';
+            howToPlay.style.display = 'none';
             break;
 
         case GAME_STATES.PLAYING:
             mainMenu.style.display = 'none';
             gameContainer.style.display = 'block';
             pauseOverlay.style.display = 'none';
+            howToPlay.style.display = 'none';
             if (pauseTime) {
                 lastTime += performance.now() - pauseTime;
                 pauseTime = 0;
