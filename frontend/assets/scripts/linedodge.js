@@ -53,6 +53,21 @@ const pauseDisplay =document.getElementById("pause-display")
 const powerUpMenu = document.getElementById('power-up-menu');
 const powerUpOptions = document.getElementById('power-up-options');
 
+//Sound
+const collisionSound = new Audio('assets/Sounds/collision.mp3');
+collisionSound.preload = 'auto';
+collisionSound.volume = 0.5;
+
+const bgMusic = new Audio('assets/Sounds/background.wav');
+bgMusic.preload = 'auto';
+bgMusic.loop = true; // Enable looping
+bgMusic.volume = 0.1; // Set a subtle volume for background music
+
+// const clickSound = new Audio('assets/Sounds/click.wav');
+// clickSound.preload = 'auto';
+// clickSound.volume = 0.4;
+
+
 //Gameplay Variables
 let highScore = localStorage.getItem('highScore') ? parseInt(localStorage.getItem('highScore')) : 0;
 console.log(`LOG: highscore from localstorage pull: ${highScore}`)
@@ -89,17 +104,17 @@ pauseBtn.onclick = function() {
     if (currentState === GAME_STATES.PLAYING) {
         updateState(GAME_STATES.PAUSED);
         pauseDisplay.innerHTML = "&#9654;"
-
+        clickSound.play();
     } else if (currentState === GAME_STATES.PAUSED) {
         updateState(GAME_STATES.PLAYING);
         pauseDisplay.innerHTML = "&#9208;"
+        clickSound.play();
     }
 }
 
 function init() {
     // set up initial state
     updateState(GAME_STATES.MAIN_MENU);
-
     // add event listeners for controls
     document.addEventListener('keydown', (e) => {
         const key = e.key.toLowerCase();
@@ -218,6 +233,7 @@ function clearCanvas() {
 function startGame() {
     clearCanvas();
     updateState(GAME_STATES.PLAYING);
+    bgMusic.play();
 }
 
 function showMainMenu() {
@@ -270,11 +286,13 @@ function gameOver() {
     // Button handlers
     mainMenuButton.onclick = () => {
         endGameModal.style.display = 'none';
+        clickSound.play();
         showMainMenu();
     };
 
     playAgainButton.onclick = () => {
         endGameModal.style.display = 'none';
+        clickSound.play();
         startGame();
     };
 }
@@ -330,7 +348,6 @@ let lastTime = 0;
 
 function update(deltaTime) {
     let moveSpeed = player.speed * deltaTime; // adjust speed by delta time
-
     // sprint logic
     if (keys['shift'] && canSprint && stamina > 0) {
         moveSpeed *= 2;
@@ -381,6 +398,8 @@ function update(deltaTime) {
         if (!isInvincible &&
             player.x + player.radius > line.x && player.x - player.radius < line.x + line.width &&
             player.y + player.radius > line.y && player.y - player.radius < line.y + line.height) {
+            collisionSound.currentTime = 0; // Reset sound to the start
+            collisionSound.play();            
             lines.splice(i, 1);
             lives -= 1;
             scoreboardLives.textContent = lives;
@@ -509,6 +528,7 @@ function endRound() {
         console.log(`Creating button for power-up: ${powerUp.name}`);
         button.onclick = () => {
             console.log(`Power-up selected: ${powerUp.name}`);
+            clickSound.play();
             applyPowerUp(index);
             powerUpMenu.classList.add('hidden');
             startNewRound();
