@@ -308,6 +308,7 @@ function activateIframes() {
 }
 
 function startFlashing() {
+    isInvincible = true;
     isFlashing = true;
     let flashDuration = 1000; // Total flashing time in milliseconds
     let flashInterval = 100; // Flash every 100ms
@@ -320,6 +321,7 @@ function startFlashing() {
         if (flashCount >= flashes) {
             clearInterval(flashIntervalId); // Stop flashing after the duration
             isFlashing = false; // Ensure visibility is restored
+            isInvincible = false;
         }
     }, flashInterval);
 }
@@ -552,4 +554,4 @@ function startNewRound() {
     console.log(`Starting Round ${round}`);
 }
 
-init();
+init()
