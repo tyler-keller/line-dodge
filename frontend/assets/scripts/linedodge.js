@@ -110,7 +110,9 @@ pauseBtn.onclick = function() {
         pauseDisplay.innerHTML = "&#9208;"
         clickSound.play();
     }
+    this.blur();
 }
+
 
 function init() {
     // set up initial state
@@ -129,7 +131,8 @@ function init() {
         }
 
         // trigger iframe action on spacebar press
-        if (key === ' ' && !iframeCooldown) {
+        if (key === ' ' && !iframeCooldown && currentState !== GAME_STATES.PAUSED) {
+            e.preventDefault();
             activateIframes();
         }
     });
@@ -140,7 +143,14 @@ function init() {
 
     // add event listener for the main menu button
     document.querySelector('#main-menu button:first-child').addEventListener('click', startGame);
+
+    const pauseMainMenuButton = document.getElementById('pause-main-menu-button');
+    pauseMainMenuButton.onclick = () => {
+        clickSound.play(); // Optional: Play a click sound
+        location.reload();
+    };
 }
+
 
 function resetGame() {
     player = { x: canvas.width / 2, y: canvas.height / 2, radius: 8, speed: 150 };
@@ -169,6 +179,7 @@ function updateState(newState) {
         case GAME_STATES.MAIN_MENU:
             mainMenu.style.display = 'block';
             gameContainer.style.display = 'none';
+            pauseOverlay.style.display = 'none';
             break;
 
         case GAME_STATES.PLAYING:
@@ -314,6 +325,7 @@ function activateIframes() {
     iframeTimer.textContent = cooldownTimeLeft.toFixed(1); // Initial time
 
     const cooldownInterval = setInterval(() => {
+        if (currentState === GAME_STATES.PAUSED) return;
         cooldownTimeLeft -= 0.1; // Decrease by 0.1s
         if (cooldownTimeLeft <= 0) {
             clearInterval(cooldownInterval);
@@ -575,5 +587,6 @@ function startNewRound() {
     updateState(GAME_STATES.PLAYING);
     console.log(`Starting Round ${round}`);
 }
+
 
 init()
