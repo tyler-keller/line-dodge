@@ -248,7 +248,8 @@ function gameOver() {
     const playAgainButton = document.getElementById('play-again-button');
 
     // Set modal content
-    endGameMessage.textContent = round === maxRounds ? 'You Won!' : 'Game Over';
+    endGameMessage.textContent = round === maxRounds ? 'YOU WON!' : 'GAME OVER';
+    endGameMessage.style.fontSize = "xx-large"
     endGameScore.textContent = `Your score: ${score}`;
     if (round === maxRounds) {
         score *= 69;

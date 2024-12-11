@@ -10,6 +10,7 @@ body {
     background-color: black;
     color: white;
     font-family: 'Pixelify Sans', sans-serif;
+    
 }
 canvas {
     background-color: #333;
@@ -146,6 +147,7 @@ button {
     cursor: pointer;
     transition: 0.5s;
     outline: none;
+    text-transform: capitalize;
 }
 
 button:hover{
@@ -322,6 +324,7 @@ button:hover{
     cursor: pointer;
     transition: 0.5s;
     outline: none;
+    text-transform: capitalize;
 }
 
 #end-game-content button:hover{
@@ -369,6 +372,7 @@ button:hover{
     cursor: pointer;
     transition: 0.5s;
     outline: none;
+    text-transform: capitalize;
 }
 
 #power-up-options button:hover {
