@@ -129,8 +129,10 @@ function init() {
         if (key === 'escape') {
             if (currentState === GAME_STATES.PLAYING) {
                 updateState(GAME_STATES.PAUSED);
+                pauseDisplay.innerHTML = "&#9654;"
             } else if (currentState === GAME_STATES.PAUSED) {
                 updateState(GAME_STATES.PLAYING);
+                pauseDisplay.innerHTML = "&#9208;"
             }
         }
 

@@ -40,6 +40,11 @@ Our team employed a normalized sigmoid function to progressively ramp up the lin
 
 This was a sufficiently complex element to add as it required a lot of parameter tuning to ensure that line speed is effectively slowed down and ramped up over the course of a single round.
 
+To add more complexity aside from the base game mechanics of line speed and randomly generated lines, we implemented many menus using javascript and state tracking for pausing, how to play, powerup selection, and win/lose.
+
+
+
+
 
 ## Good error handling, no bugs (20 points) 
 
