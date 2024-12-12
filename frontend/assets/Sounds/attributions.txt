@@ -1,0 +1,10 @@
+Game Over Sound:
+j1game_over_mono.wav by jivatma07 -- https://freesound.org/s/173859/ -- License: Creative Commons 0
+
+Collision:
+Fast Collision by qubodup -- https://freesound.org/s/332056/ -- License: Creative Commons 0
+
+Parrot AR drone 2.0 take off, flight and landing by timsc -- https://freesound.org/s/332036/ -- License: Creative Commons 0
+
+Background Music:
+Arcade Music Loop.wav by joshuaempyre -- https://freesound.org/s/251461/ -- License: Attribution 4.0
