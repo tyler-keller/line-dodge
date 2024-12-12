@@ -1,3 +1,6 @@
+// Import simpleheat
+// import { simpleheat } from './simpleheat';
+
 // Constants for game states
 const GAME_STATES = {
     MAIN_MENU: 'MAIN_MENU',
@@ -76,7 +79,7 @@ scoreboardHighScore.textContent = highScore;
 menuHighScore.textContent = highScore;
 
 let keys = {};
-let player = null, lines = null, score = null, lives = null, round = null, linesPerRound = null, linesLeft = null, lineSpeedMultiplier = null, incrLinesPerRound = null;
+let player = null, lines = null, score = null, lives = null, round = null, linesPerRound = null, linesLeft = null, lineSpeedMultiplier = null, incrLinesPerRound = null, playerMovements = null;
 let maxRounds = 5; // +1 than playable rounds for end game logic; hacky ik... ...
 let maxLinesOnScreen = 5;
 
@@ -155,6 +158,7 @@ function init() {
 
 function resetGame() {
     player = { x: canvas.width / 2, y: canvas.height / 2, radius: 8, speed: 150 };
+    playerMovements = [];
     lines = [];
     score = 0;
     lives = 3;
@@ -271,6 +275,8 @@ function gameOver() {
     bgMusic.currentTime = 0;
     gameOverSound.play();
     // Show modal
+    // renderHeatmap();
+
     const endGameModal = document.getElementById('end-game-modal');
     const endGameMessage = document.getElementById('end-game-message');
     const endGameScore = document.getElementById('end-game-score');
@@ -393,6 +399,8 @@ function update(deltaTime) {
     player.x = Math.max(player.radius, Math.min(canvas.width - player.radius, player.x));
     player.y = Math.max(player.radius, Math.min(canvas.height - player.radius, player.y));
 
+    playerMovements.push({ x: player.x, y: player.y });
+
     // update lines
     for (let i = lines.length - 1; i >= 0; i--) {
         let line = lines[i];
@@ -444,6 +452,23 @@ function update(deltaTime) {
         endRound();
     }
 }
+
+function renderHeatmap() {
+    const heatmapCanvas = document.getElementById('heatmapCanvas');
+    const heatmapCtx = heatmapCanvas.getContext('2d');
+
+    // clear the heatmap canvas
+    heatmapCtx.clearRect(0, 0, heatmapCanvas.width, heatmapCanvas.height);
+
+    // use simpleheat or custom logic to render heatmap
+    const heat = simpleheat(heatmapCanvas);
+    const heatmapData = playerMovements.map(({ x, y }) => [x, y, 1]);
+
+    heat.data(heatmapData);
+    heat.radius(25, 15); // adjust for desired heatmap effect
+    heat.draw();
+}
+
 
 function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -592,4 +617,4 @@ function startNewRound() {
 }
 
 
-init()
+init();
